@@ -1,14 +1,13 @@
 ﻿import { Component } from '@angular/core';
 
-import { NAV_LINKS, STORE, WHATSAPP_URL } from '../landing.data';
+import { WHATSAPP_URL } from '../landing.data';
 import { RevealDirective } from '../motion/reveal.directive';
 import { PetArt } from '../pet-art';
 import { makeParticles } from './landing-hero';
-import { LandingMap } from './landing-map';
 
 @Component({
   selector: 'app-landing-cta',
-  imports: [RevealDirective, PetArt, LandingMap],
+  imports: [RevealDirective, PetArt],
   template: `
     <section class="cta" aria-labelledby="cta-title">
       <div class="bokeh" aria-hidden="true">
@@ -36,28 +35,6 @@ import { LandingMap } from './landing-map';
         </div>
       </div>
     </section>
-
-    <footer class="footer">
-      <div class="container cols">
-        <div>
-          <p class="logo">Mundo <span>✦</span> Pet</p>
-          <p class="muted">Hotel · Rações · Banho & Tosa · Veterinário 24h</p>
-        </div>
-        <nav aria-label="Rodapé">
-          @for (l of links; track l.href) {
-            <a [href]="l.href">{{ l.label }}</a>
-          }
-        </nav>
-        <div class="muted">
-          <p>{{ store.hours }}<br />{{ store.clinicHours }}</p>
-          <p>{{ store.city }}/{{ store.state }}</p>
-        </div>
-      </div>
-      <div class="container">
-        <app-landing-map />
-      </div>
-      <p class="container copy muted">© {{ year }} MundoPet. Feito com carinho para quem tem quatro patas.</p>
-    </footer>
   `,
   styles: `
     .cta { position: relative; overflow: hidden; padding: 120px 0 140px; text-align: center;
@@ -71,20 +48,9 @@ import { LandingMap } from './landing-map';
     h2 { font-size: clamp(2.6rem, 13vw, 6.5rem); font-style: italic; margin: 14px 0 20px; }
     .sub { color: var(--muted); max-width: 44ch; margin: 0 auto 32px; }
     .actions { display: flex; flex-direction: column; gap: 12px; align-items: stretch; max-width: 320px; margin: 0 auto; }
-    .footer { border-top: 1px solid var(--line); padding: 56px 0 120px; font-size: .9rem; }
-    .cols { display: grid; gap: 32px; }
-    .logo { font-family: var(--font-display); letter-spacing: .32em; text-transform: uppercase; margin: 0 0 6px; }
-    .logo span { color: var(--gold); }
-    nav { display: grid; gap: 4px; }
-    nav a { text-decoration: none; padding: 8px 0; color: var(--muted); }
-    nav a:hover { color: var(--ink); }
-    .muted { color: var(--muted); margin: 0 0 8px; }
-    .copy { margin-top: 40px; font-size: .78rem; }
     @media (min-width: 900px) {
       .cta { padding: 180px 0; }
       .actions { flex-direction: row; justify-content: center; max-width: none; }
-      .cols { grid-template-columns: 2fr 1fr 1fr; }
-      .footer { padding-bottom: 56px; }
     }
     @keyframes drift {
       0% { opacity: 0; transform: translate(0, 0) scale(.6); }
@@ -95,8 +61,5 @@ import { LandingMap } from './landing-map';
 })
 export class LandingCta {
   readonly whatsapp = WHATSAPP_URL;
-  readonly links = NAV_LINKS;
-  readonly store = STORE;
   readonly petals = makeParticles(18, 42);
-  readonly year = new Date().getFullYear();
 }

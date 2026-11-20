@@ -1,0 +1,27 @@
+<div class="card">
+  <div class="map">
+    <!-- Carrega so quando chega perto da tela. Se falhar, endereco e botoes continuam uteis. -->
+    <iframe
+      [src]="embedUrl()"
+      [title]="'Mapa do Google com a localização da ' + store().name"
+      loading="lazy"
+      referrerpolicy="no-referrer-when-downgrade"
+      allowfullscreen
+    ></iframe>
+  </div>
+
+  <address class="info">
+    <span class="pin" aria-hidden="true">
+      <svg viewBox="0 0 24 24"><path d="M12 22s7-6.2 7-12a7 7 0 0 0-14 0c0 5.8 7 12 7 12z" /><circle cx="12" cy="10" r="2.6" /></svg>
+    </span>
+    <div class="text">
+      <strong>{{ store().street }}</strong>
+      <span>{{ store().district }} · {{ store().city }}/{{ store().state }}</span>
+      <span>CEP {{ store().zip }}</span>
+    </div>
+    <div class="go">
+      <a class="btn btn--gold" [href]="links().google" target="_blank" rel="noopener">Como chegar</a>
+      <a class="btn" [href]="links().waze" target="_blank" rel="noopener">Waze</a>
+    </div>
+  </address>
+</div>

@@ -32,6 +32,13 @@ export const STORE = {
   clinicHours: 'Clínica: 24 horas',
   lat: -23.5505,
   lng: -46.6333,
+  /**
+   * O que o Google Maps procura. Com a loja cadastrada no Google, use "MundoPet, Rua X 123, Cidade"
+   * para o mapa mostrar o cartao da empresa (avaliacoes, fotos). Vazio = usa as coordenadas.
+   */
+  mapsQuery: '',
+  // TODO(negocio): perfil real do Instagram
+  instagram: 'https://www.instagram.com/',
 };
 
 export const PILLARS =['Hospedagem', 'Nutrição', 'Beleza', 'Saúde'];

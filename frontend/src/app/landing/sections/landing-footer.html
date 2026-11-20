@@ -1,0 +1,43 @@
+<footer class="footer">
+  <div class="container">
+    <div class="top">
+      <div class="brand" appReveal>
+        <a class="logo" href="#topo" aria-label="MundoPet, voltar ao início">Mundo <span aria-hidden="true">✦</span> Pet</a>
+        <p>Hotel, rações, banho &amp; tosa e clínica veterinária 24h. Tudo o que o seu melhor amigo merece, em um só lugar.</p>
+        <div class="social">
+          <a [href]="store.instagram" target="_blank" rel="noopener" aria-label="Instagram do MundoPet">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5" /><circle cx="12" cy="12" r="4" /><circle class="dot" cx="17.5" cy="6.5" r="1" /></svg>
+          </a>
+          <a [href]="whatsapp" target="_blank" rel="noopener" aria-label="WhatsApp do MundoPet">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20l1.3-4A8 8 0 1 1 8 18.7z" /><path d="M9 9.5c0 3 2.5 5.5 5.5 5.5l1-1.5-2-1-1 .8a4 4 0 0 1-1.8-1.8l.8-1-1-2z" /></svg>
+          </a>
+          <a class="app" href="#app">Baixe o app</a>
+        </div>
+      </div>
+
+      <nav class="col" aria-labelledby="ft-servicos" [appReveal]="100">
+        <h3 id="ft-servicos">Serviços</h3>
+        @for (s of services; track s.href) {
+          <a [href]="s.href">{{ s.label }}</a>
+        }
+      </nav>
+
+      <div class="col" [appReveal]="200">
+        <h3>Atendimento</h3>
+        <p>{{ store.hours }}</p>
+        <p class="highlight"><span class="live" aria-hidden="true"></span>{{ store.clinicHours }}</p>
+        <a [href]="whatsapp" target="_blank" rel="noopener">Fale no WhatsApp →</a>
+      </div>
+    </div>
+
+    <div class="where" appReveal>
+      <h3>Onde estamos</h3>
+      <app-landing-map />
+    </div>
+
+    <div class="bottom">
+      <p>© {{ year }} MundoPet · Feito com carinho para quem tem quatro patas.</p>
+      <a class="up" href="#topo">Voltar ao topo <span aria-hidden="true">↑</span></a>
+    </div>
+  </div>
+</footer>
