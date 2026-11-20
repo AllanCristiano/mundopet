@@ -71,6 +71,19 @@ docker compose --profile mobile run --rm flutter-apk     # gera dist/mundopet.ap
 O nginx serve a pasta `dist/` em **`/download/`**, então assim que o APK é gerado ele já aparece na landing
 (seção "O MundoPet no seu bolso") como **Baixar para Android**, sem rebuild. Enquanto não existir, o botão mostra "em breve".
 
+### O que tem no app
+
+O app segue o site (mesmas cores, tema claro/escuro com a mesma escolha salva e os textos que o dono edita em `/gestao`):
+
+| Aba | Conteúdo |
+|---|---|
+| **Início** | aviso da loja, hero, números (nota média real dos depoimentos), serviços ligados na gestão, depoimentos aprovados, convite, endereço/horários e "Como chegar" |
+| **Rações** | busca, cães/gatos, promoções, ordenação; carrinho → retirar ou entregar (endereço pelo CEP, taxa por km calculada pela API) → pedido pronto no WhatsApp |
+| **Beleza** | galeria das fotos que a clínica publica (filtro por serviço, foto em tela cheia com zoom) e envio de depoimento para aprovação |
+| **Pets** | cadastro de pets |
+
+Sem API, o app abre com os textos padrão (nunca trava). O endereço de entrega fica salvo no aparelho.
+
 A URL da API embutida no APK vem de `MOBILE_API_URL` (padrão `http://10.0.2.2:8088`, o host visto pelo emulador).
 Para celular físico use o IP da máquina na rede, ex.: `MOBILE_API_URL=http://192.168.0.10:8088`.
 

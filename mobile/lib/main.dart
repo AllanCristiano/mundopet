@@ -1,23 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-import 'pets/pets_api.dart';
-import 'pets/pets_page.dart';
+import 'app.dart';
 
-void main() {
-  runApp(MundoPetApp(api: PetsApi()));
-}
+export 'app.dart';
 
-class MundoPetApp extends StatelessWidget {
-  const MundoPetApp({super.key, required this.api});
-
-  final PetsApi api;
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'MundoPet',
-      theme: ThemeData(colorSchemeSeed: const Color(0xFF2E7D32), useMaterial3: true),
-      home: PetsPage(api: api),
-    );
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  SharedPreferences? prefs;
+  try {
+    prefs = await SharedPreferences.getInstance();
+  } catch (_) {
+    // sem armazenamento: tema e endereco valem so nesta sessao
   }
+  runApp(MundoPetApp(services: AppServices(), prefs: prefs));
 }

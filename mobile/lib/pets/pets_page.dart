@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../core/widgets.dart';
 import 'pet.dart';
 import 'pets_api.dart';
 
@@ -49,7 +50,7 @@ class _PetsPageState extends State<PetsPage> {
         title: const Text('Novo pet'),
         content: Column(mainAxisSize: MainAxisSize.min, children: [
           TextField(key: const Key('name'), controller: name, decoration: const InputDecoration(labelText: 'Nome')),
-          TextField(key: const Key('species'), controller: species, decoration: const InputDecoration(labelText: 'Especie')),
+          TextField(key: const Key('species'), controller: species, decoration: const InputDecoration(labelText: 'Espécie')),
         ]),
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancelar')),
@@ -71,13 +72,19 @@ class _PetsPageState extends State<PetsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('MundoPet')),
+      // o topo (marca + tema) e da barra do app; aqui so o titulo da area
       floatingActionButton: FloatingActionButton(
         onPressed: _openCreate,
         tooltip: 'Novo pet',
         child: const Icon(Icons.add),
       ),
-      body: RefreshIndicator(onRefresh: _load, child: _body()),
+      body: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        const Padding(
+          padding: EdgeInsets.fromLTRB(20, 24, 20, 8),
+          child: HeadlineText('Meus', 'pets', size: 32),
+        ),
+        Expanded(child: RefreshIndicator(onRefresh: _load, child: _body())),
+      ]),
     );
   }
 
@@ -103,6 +110,7 @@ class _PetsPageState extends State<PetsPage> {
       itemBuilder: (_, i) {
         final pet = _pets[i];
         return ListTile(
+          contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
           leading: pet.photoKey == null
               ? const CircleAvatar(child: Icon(Icons.pets))
               : CircleAvatar(backgroundImage: NetworkImage(widget.api.photoUrl(pet))),
