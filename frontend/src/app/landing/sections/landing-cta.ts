@@ -1,4 +1,4 @@
-﻿import { Component } from '@angular/core';
+import { Component } from '@angular/core';
 
 import { WHATSAPP_URL } from '../landing.data';
 import { RevealDirective } from '../motion/reveal.directive';

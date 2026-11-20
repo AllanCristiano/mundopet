@@ -1,0 +1,52 @@
+@let p = product();
+<article class="card" [class.out]="!p.inStock" [style.--c]="p.color" [style.--i]="index()" [attr.aria-label]="p.name">
+  <div class="media">
+    <div class="glow" aria-hidden="true"></div>
+    <app-bag-art class="bag" [color]="p.color" [brand]="p.brand" [species]="p.species" [weightKg]="p.weightKg" />
+    <div class="badges">
+      @if (p.discountPercent) {
+        <span class="badge promo">-{{ p.discountPercent }}%</span>
+      }
+      @if (!p.inStock) {
+        <span class="badge out">Esgotado</span>
+      }
+      @if (p.line === 'TERAPEUTICA') {
+        <span class="badge vet" title="Uso sob orientação veterinária">Vet</span>
+      }
+    </div>
+  </div>
+
+  <div class="body">
+    <p class="brand">{{ p.brand }}</p>
+    <h3>{{ p.name }}</h3>
+    <p class="meta">
+      @for (m of meta(); track m) {
+        <span>{{ m }}</span>
+      }
+    </p>
+
+    <div class="price">
+      @if (p.promoPrice) {
+        <s>{{ money(p.price) }}</s>
+      }
+      <strong>{{ money(p.effectivePrice) }}</strong>
+      <small>{{ kg(p.weightKg) }} · {{ money(p.pricePerKg) }}/kg</small>
+    </div>
+
+    @if (!p.inStock) {
+      <button type="button" class="add" disabled>Indisponível</button>
+    } @else if (qty() === 0) {
+      <button type="button" class="add" (click)="add()">
+        <span aria-hidden="true">＋</span> Adicionar
+      </button>
+    } @else {
+      <div class="stepper" role="group" [attr.aria-label]="'Quantidade de ' + p.name">
+        <button type="button" (click)="dec()" [attr.aria-label]="qty() === 1 ? 'Remover do carrinho' : 'Diminuir'">
+          {{ qty() === 1 ? '🗑' : '−' }}
+        </button>
+        <output aria-live="polite">{{ qty() }}</output>
+        <button type="button" (click)="inc()" aria-label="Aumentar">＋</button>
+      </div>
+    }
+  </div>
+</article>

@@ -1,0 +1,90 @@
+@let f = filters();
+<div class="filters">
+  <label class="promo" [class.on]="f.promo">
+    <input type="checkbox" [checked]="f.promo" (change)="changed.emit({ promo: !f.promo })" />
+    <span class="switch" aria-hidden="true"><i></i></span>
+    <span>
+      <strong>Só promoções 🔥</strong>
+      @if (facets(); as fc) {
+        <small>{{ fc.prices.promoCount }} ofertas ativas</small>
+      }
+    </span>
+  </label>
+
+  <fieldset>
+    <legend>Para quem</legend>
+    <div class="seg">
+      @for (s of species; track s.label) {
+        <button type="button" [class.on]="f.species === s.value" [attr.aria-pressed]="f.species === s.value" (click)="changed.emit({ species: s.value })">
+          <span aria-hidden="true">{{ s.icon }}</span> {{ s.label }}
+        </button>
+      }
+    </div>
+  </fieldset>
+
+  <fieldset>
+    <legend>Idade</legend>
+    <div class="chips">
+      @for (s of stages; track s[0]) {
+        <button type="button" class="chip" [class.on]="f.stage.includes(s[0])" [attr.aria-pressed]="f.stage.includes(s[0])" (click)="toggleStage(s[0])">{{ s[1] }}</button>
+      }
+    </div>
+  </fieldset>
+
+  @if (f.species !== 'GATO') {
+    <fieldset>
+      <legend>Porte</legend>
+      <div class="chips">
+        @for (s of sizes; track s[0]) {
+          <button type="button" class="chip" [class.on]="f.petSize.includes(s[0])" [attr.aria-pressed]="f.petSize.includes(s[0])" (click)="toggleSize(s[0])">{{ s[1] }}</button>
+        }
+      </div>
+    </fieldset>
+  }
+
+  <fieldset>
+    <legend>Linha</legend>
+    <div class="chips">
+      @for (l of lines; track l[0]) {
+        <button type="button" class="chip" [class.on]="f.line.includes(l[0])" [attr.aria-pressed]="f.line.includes(l[0])" (click)="toggleLine(l[0])">{{ l[1] }}</button>
+      }
+    </div>
+  </fieldset>
+
+  <fieldset>
+    <legend>Preço</legend>
+    <div class="chips">
+      @for (r of ranges; track r.label) {
+        <button type="button" class="chip" [class.on]="isRange(r)" [attr.aria-pressed]="isRange(r)" (click)="setRange(r)">{{ r.label }}</button>
+      }
+    </div>
+    <div class="prices">
+      <label>
+        <span>Mín.</span>
+        <input type="number" inputmode="decimal" min="0" placeholder="R$ 0" [value]="f.minPrice ?? ''" (change)="priceInput('minPrice', $any($event.target).value)" />
+      </label>
+      <label>
+        <span>Máx.</span>
+        <input type="number" inputmode="decimal" min="0" placeholder="R$ 999" [value]="f.maxPrice ?? ''" (change)="priceInput('maxPrice', $any($event.target).value)" />
+      </label>
+    </div>
+  </fieldset>
+
+  @if (brands().length) {
+    <fieldset>
+      <legend>Marca</legend>
+      <div class="brands">
+        @for (b of brands(); track b[0]) {
+          <label class="check">
+            <input type="checkbox" [checked]="f.brand.includes(b[0])" (change)="toggleBrand(b[0])" />
+            <span class="box" aria-hidden="true"></span>
+            <span class="name">{{ b[0] }}</span>
+            <small>{{ b[1] }}</small>
+          </label>
+        }
+      </div>
+    </fieldset>
+  }
+
+  <button type="button" class="clear" (click)="cleared.emit()">Limpar filtros</button>
+</div>

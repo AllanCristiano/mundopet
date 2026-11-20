@@ -1,3 +1,4 @@
+import { provideRouter } from '@angular/router';
 import { TestBed } from '@angular/core/testing';
 
 import { STORE } from '../landing.data';
@@ -50,6 +51,8 @@ describe('LandingMap (Google Maps)', () => {
 });
 
 describe('LandingFooter', () => {
+  beforeEach(() => TestBed.configureTestingModule({ providers: [provideRouter([])] }));
+
   function render() {
     const fixture = TestBed.createComponent(LandingFooter);
     fixture.detectChanges();
@@ -60,7 +63,8 @@ describe('LandingFooter', () => {
     const el = render();
     expect(el.querySelector('.logo')).not.toBeNull();
     const services = Array.from(el.querySelectorAll('nav.col a')).map((a) => a.getAttribute('href'));
-    expect(services).toEqual(['#hotel', '#racoes', '#beleza', '#veterinario']);
+    expect(services).toEqual(['#hotel', '#racoes', '#beleza', '#veterinario', '/racoes']);
+    expect(el.querySelector('a.shop')!.textContent).toContain('Loja');
     expect(el.textContent).toContain(STORE.clinicHours);
     expect(el.querySelector('app-landing-map')).not.toBeNull();
     expect(el.querySelector('a.up')!.getAttribute('href')).toBe('#topo');

@@ -1,10 +1,16 @@
-﻿// Conteudo da landing page. Edite aqui sem mexer nos componentes.
+// Conteudo da landing page. Edite aqui sem mexer nos componentes.
 // TODO(negocio): substituir telefone, numeros e depoimentos pelos dados REAIS da loja antes de publicar.
 
 export type ArtKind = 'dog' | 'cat' | 'house' | 'bowl' | 'scissors' | 'heart';
 export type Scene = 'hotel' | 'food' | 'beauty' | 'vet';
 
-export const WHATSAPP_URL = 'https://wa.me/5500000000000?text=Ol%C3%A1!%20Quero%20conhecer%20o%20MundoPet';
+/** Numero do WhatsApp da loja com DDI+DDD, so digitos. TODO(negocio): numero real. */
+export const WHATSAPP_PHONE = '5500000000000';
+export const WHATSAPP_URL = `https://wa.me/${WHATSAPP_PHONE}?text=Ol%C3%A1!%20Quero%20conhecer%20o%20MundoPet`;
+
+export function whatsappLink(text: string): string {
+  return `https://wa.me/${WHATSAPP_PHONE}?text=${encodeURIComponent(text)}`;
+}
 
 export const NAV_LINKS = [
   { label: 'Hotel', href: '#hotel' },
@@ -12,6 +18,7 @@ export const NAV_LINKS = [
   { label: 'Beleza', href: '#beleza' },
   { label: 'Veterinário', href: '#veterinario' },
   { label: 'App', href: '#app' },
+  { label: 'Loja', href: '/racoes' },
 ];
 
 export const SERVICES = ['Hotel', 'Rações', 'Banho & Tosa', 'Veterinário', 'Day Care', 'Spa'];
@@ -85,7 +92,7 @@ export const CHAPTERS: Chapter[] = [
     titleEm: 'energia',
     text: 'Rações premium, naturais e dietas veterinárias, com consultoria de nutrição para cada fase da vida do seu pet.',
     features: ['Linhas premium e naturais', 'Dietas veterinárias', 'Assinatura com desconto', 'Entrega no mesmo dia'],
-    cta: 'Ver rações',
+    cta: 'Ver catálogo de rações',
   },
   {
     id: 'beleza',

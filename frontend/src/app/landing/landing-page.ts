@@ -1,4 +1,4 @@
-﻿import { Component } from '@angular/core';
+import { Component } from '@angular/core';
 
 import { LandingAnatomy } from './sections/landing-anatomy';
 import { LandingApp } from './sections/landing-app';

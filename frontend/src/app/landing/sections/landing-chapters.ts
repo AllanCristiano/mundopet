@@ -1,4 +1,5 @@
-﻿import { Component } from '@angular/core';
+import { Component } from '@angular/core';
+import { RouterLink } from '@angular/router';
 
 import { CHAPTERS, SERVICES, WHATSAPP_URL } from '../landing.data';
 import { RevealDirective } from '../motion/reveal.directive';
@@ -7,7 +8,7 @@ import { PetArt } from '../pet-art';
 
 @Component({
   selector: 'app-landing-chapters',
-  imports: [ScrollProgressDirective, RevealDirective, PetArt],
+  imports: [ScrollProgressDirective, RevealDirective, PetArt, RouterLink],
   templateUrl: './landing-chapters.html',
   styleUrl: './landing-chapters.scss',
 })

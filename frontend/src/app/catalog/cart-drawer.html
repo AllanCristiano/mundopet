@@ -1,0 +1,120 @@
+<div class="backdrop" (click)="close()" aria-hidden="true"></div>
+
+<aside class="panel" role="dialog" aria-modal="true" aria-labelledby="cart-title" [attr.inert]="cart.isOpen() ? null : ''">
+  <header class="head">
+    <div>
+      <p class="kicker">Seu pedido</p>
+      <h2 id="cart-title">Carrinho <span class="count">{{ cart.count() }}</span></h2>
+    </div>
+    <button type="button" class="x" (click)="close()" aria-label="Fechar carrinho">✕</button>
+  </header>
+
+  @if (cart.lines().length === 0) {
+    <div class="empty">
+      <div class="bowl" aria-hidden="true">🥣</div>
+      <p><strong>Seu carrinho está vazio</strong></p>
+      <p class="muted">Escolha as rações e monte o pedido. A gente recebe tudo pelo WhatsApp.</p>
+      <button type="button" class="btn btn--gold" (click)="close()">Ver rações</button>
+    </div>
+  } @else if (sent()) {
+    <div class="empty sent">
+      <div class="bowl" aria-hidden="true">💬</div>
+      <p><strong>Pedido enviado para o WhatsApp!</strong></p>
+      <p class="muted">Agora é só confirmar a mensagem por lá. A loja responde com a disponibilidade e a forma de pagamento.</p>
+      <button type="button" class="btn btn--gold" (click)="finish(true)">Limpar carrinho</button>
+      <button type="button" class="btn" (click)="finish(false)">Manter itens</button>
+    </div>
+  } @else {
+    <div class="scroll">
+      <ul class="lines">
+        @for (l of cart.lines(); track l.id) {
+          @let q = lineOf(l.id);
+          <li [style.--c]="l.color">
+            <app-bag-art class="mini" [color]="l.color" [brand]="l.brand" [weightKg]="l.weightKg" />
+            <div class="info">
+              <strong>{{ l.name }}</strong>
+              <small>{{ l.brand }} · {{ kg(l.weightKg) }}</small>
+              <span class="unit">
+                @if (q?.promo) {
+                  <s>{{ money(q!.originalUnitPrice) }}</s>
+                }
+                {{ money(q?.unitPrice ?? l.effectivePrice) }} / un
+              </span>
+              @if (q?.warning) {
+                <small class="warn">⚠️ {{ q!.warning }}</small>
+              }
+            </div>
+            <div class="side">
+              <div class="stepper" role="group" [attr.aria-label]="'Quantidade de ' + l.name">
+                <button type="button" (click)="cart.dec(l.id)" [attr.aria-label]="l.qty === 1 ? 'Remover' : 'Diminuir'">{{ l.qty === 1 ? '🗑' : '−' }}</button>
+                <output>{{ l.qty }}</output>
+                <button type="button" (click)="cart.inc(l.id)" [disabled]="l.qty >= maxQty" aria-label="Aumentar">＋</button>
+              </div>
+              <strong class="total">{{ money(q?.lineTotal ?? l.effectivePrice * l.qty) }}</strong>
+            </div>
+          </li>
+        }
+      </ul>
+
+      @if (unavailableNames().length) {
+        <div class="alert" role="alert">
+          <p><strong>Indisponível no momento:</strong></p>
+          <ul>
+            @for (u of unavailableNames(); track u.id) {
+              <li>{{ u.name }}</li>
+            }
+          </ul>
+          <button type="button" (click)="removeUnavailable()">Remover do carrinho</button>
+        </div>
+      }
+
+      <div class="form">
+        <label>
+          <span>Seu nome <small>(opcional)</small></span>
+          <input type="text" maxlength="60" autocomplete="name" [value]="customerName()" (input)="customerName.set($any($event.target).value)" />
+        </label>
+
+        <div class="seg" role="radiogroup" aria-label="Como prefere receber">
+          <button type="button" role="radio" [attr.aria-checked]="fulfillment() === 'PICKUP'" [class.on]="fulfillment() === 'PICKUP'" (click)="fulfillment.set('PICKUP')">🏬 Retirar na loja</button>
+          <button type="button" role="radio" [attr.aria-checked]="fulfillment() === 'DELIVERY'" [class.on]="fulfillment() === 'DELIVERY'" (click)="fulfillment.set('DELIVERY')">🛵 Entrega</button>
+        </div>
+
+        <label>
+          <span>Observações <small>(opcional)</small></span>
+          <textarea rows="2" maxlength="300" placeholder="Ex.: troco para R$ 200, interfone 12…" [value]="notes()" (input)="notes.set($any($event.target).value)"></textarea>
+        </label>
+      </div>
+
+      <button type="button" class="preview-toggle" (click)="showPreview.set(!showPreview())" [attr.aria-expanded]="showPreview()">
+        {{ showPreview() ? 'Esconder' : 'Ver' }} como fica a mensagem
+      </button>
+      @if (showPreview() && quote()?.whatsappText) {
+        <div class="chat" aria-label="Pré-visualização da mensagem">
+          <div class="bubble" [innerHTML]="preview()"></div>
+        </div>
+      }
+    </div>
+
+    <footer class="foot">
+      @if (quoteError()) {
+        <p class="error" role="alert">{{ quoteError() }}</p>
+      }
+      @if (quote(); as q) {
+        <dl class="sum" [class.loading]="quoting()">
+          @if (q.discount > 0) {
+            <div><dt>Subtotal</dt><dd>{{ money(q.subtotal) }}</dd></div>
+            <div class="disc"><dt>Descontos</dt><dd>-{{ money(q.discount) }}</dd></div>
+          }
+          <div class="tot"><dt>Total</dt><dd>{{ money(q.total) }}</dd></div>
+        </dl>
+      } @else {
+        <p class="muted calc">Calculando total…</p>
+      }
+      <button type="button" class="wa" [disabled]="!canSend()" (click)="send()">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm5.3 14.1c-.2.6-1.3 1.2-1.8 1.3-.5.1-1 .1-3.3-.8-2.8-1.1-4.5-3.9-4.7-4.1-.1-.2-1.1-1.5-1.1-2.9s.7-2.1 1-2.4c.3-.3.6-.3.8-.3h.6c.2 0 .4 0 .7.5l.9 2.2c.1.2.1.4 0 .6l-.4.6-.4.4c-.1.2-.3.3-.1.6.2.3.8 1.3 1.7 2.1 1.2 1 2.1 1.4 2.4 1.5.3.1.5.1.7-.1l1-1.2c.2-.3.4-.2.7-.1l2.1 1c.3.1.5.2.5.4.1.1.1.7-.1 1.3z" /></svg>
+        {{ quoting() ? 'Atualizando valores…' : 'Enviar pedido no WhatsApp' }}
+      </button>
+      <button type="button" class="clear" (click)="cart.clear()">Esvaziar carrinho</button>
+    </footer>
+  }
+</aside>

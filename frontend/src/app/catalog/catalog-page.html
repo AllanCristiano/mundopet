@@ -1,0 +1,173 @@
+<header class="bar">
+  <div class="bar__inner container">
+    <a routerLink="/" class="logo" aria-label="MundoPet, página inicial">Mundo <span aria-hidden="true">✦</span> Pet</a>
+    <span class="where">Rações</span>
+    <div class="tools">
+      <app-theme-toggle />
+      <button type="button" class="cart-btn" (click)="openCart()" [attr.aria-label]="'Abrir carrinho, ' + cart.count() + ' itens'">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 4h2l2.4 11.2a2 2 0 0 0 2 1.6h7.7a2 2 0 0 0 2-1.5L21 8H6.2" /><circle cx="10" cy="20" r="1.4" /><circle cx="17" cy="20" r="1.4" /></svg>
+        @if (cart.count() > 0) {
+          @for (b of [cart.bump()]; track b) {
+            <span class="badge">{{ cart.count() }}</span>
+          }
+        }
+      </button>
+    </div>
+  </div>
+</header>
+
+<section class="intro">
+  <div class="kibbles" aria-hidden="true">
+    @for (k of skeletons; track k) {
+      <i [style.--k]="k"></i>
+    }
+  </div>
+  <div class="container">
+    <p class="kicker">Loja MundoPet</p>
+    <h1>Rações com preço de <em>amigo</em></h1>
+    <p class="sub">Monte o carrinho e mande o pedido pelo WhatsApp. A gente separa, confirma e entrega ou deixa pronto para retirar.</p>
+  </div>
+</section>
+
+@if (offers().length) {
+  <section class="offers" aria-labelledby="offers-title">
+    <div class="container head">
+      <h2 id="offers-title">Ofertas da semana <span aria-hidden="true">🔥</span></h2>
+      <button type="button" class="see-all" (click)="update({ promo: true, sort: 'DISCOUNT' })">Ver todas</button>
+    </div>
+    <ul class="rail">
+      @for (o of offers(); track o.id; let i = $index) {
+        <li class="offer" [style.--c]="o.color" [style.--i]="i">
+          <span class="off">-{{ o.discountPercent }}%</span>
+          <app-bag-art class="obag" [color]="o.color" [brand]="o.brand" [species]="o.species" [weightKg]="o.weightKg" />
+          <div class="otext">
+            <small>{{ o.brand }}</small>
+            <strong>{{ o.name }}</strong>
+            <span class="oprice"><s>{{ money(o.price) }}</s> {{ money(o.effectivePrice) }}</span>
+            @if (timeLeft(o.promoEndsAt, now()); as left) {
+              <span class="timer">⏱ {{ left }}</span>
+            }
+          </div>
+          <button type="button" class="oadd" (click)="addOffer(o)" [disabled]="!o.inStock" [attr.aria-label]="'Adicionar ' + o.name">＋</button>
+        </li>
+      }
+    </ul>
+  </section>
+}
+
+<div class="toolbar">
+  <div class="container toolbar__inner">
+    <label class="search">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7" /><path d="M20 20l-3.5-3.5" /></svg>
+      <span class="sr">Buscar rações</span>
+      <input type="search" placeholder="Buscar ração, marca ou sabor…" maxlength="60" enterkeyhint="search" [value]="filters().q" (input)="search($any($event.target).value)" />
+      @if (filters().q) {
+        <button type="button" class="clear-q" (click)="search('')" aria-label="Limpar busca">✕</button>
+      }
+    </label>
+    <button type="button" class="filters-btn" (click)="sheetOpen.set(true)">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M7 12h10M10 18h4" /></svg>
+      Filtros
+      @if (activeCount()) {
+        <span class="n">{{ activeCount() }}</span>
+      }
+    </button>
+    <label class="sort">
+      <span class="sr">Ordenar por</span>
+      <select [value]="filters().sort" (change)="update({ sort: $any($event.target).value })">
+        @for (s of sortOptions; track s[0]) {
+          <option [value]="s[0]" [selected]="filters().sort === s[0]">{{ s[1] }}</option>
+        }
+      </select>
+    </label>
+  </div>
+</div>
+
+<div class="container layout">
+  <aside class="side" aria-label="Filtros">
+    <app-catalog-filters [filters]="filters()" [facets]="facets()" (changed)="update($event)" (cleared)="clearAll()" />
+  </aside>
+
+  <main class="results" aria-live="polite" [attr.aria-busy]="loading()">
+    <div class="summary">
+      <p>
+        @if (!loading()) {
+          <strong>{{ total() }}</strong> {{ total() === 1 ? 'ração encontrada' : 'rações encontradas' }}
+        } @else {
+          Buscando…
+        }
+      </p>
+      @if (chips().length) {
+        <ul class="chips">
+          @for (c of chips(); track c.label) {
+            <li><button type="button" (click)="update(c.remove)" [attr.aria-label]="'Remover filtro ' + c.label">{{ c.label }} <span aria-hidden="true">✕</span></button></li>
+          }
+          <li><button type="button" class="clear-all" (click)="clearAll()">Limpar tudo</button></li>
+        </ul>
+      }
+    </div>
+
+    @if (error()) {
+      <div class="state">
+        <p class="big" aria-hidden="true">😿</p>
+        <p><strong>{{ error() }}</strong></p>
+        <button type="button" class="btn" (click)="retry()">Tentar novamente</button>
+      </div>
+    } @else if (loading() && items().length === 0) {
+      <div class="grid">
+        @for (s of skeletons; track s) {
+          <div class="skeleton" aria-hidden="true"></div>
+        }
+      </div>
+    } @else if (items().length === 0) {
+      <div class="state">
+        <p class="big" aria-hidden="true">🔎</p>
+        <p><strong>Nenhuma ração encontrada</strong></p>
+        <p class="muted">Tente outra busca ou remova alguns filtros.</p>
+        <button type="button" class="btn" (click)="clearAll(); search('')">Limpar busca e filtros</button>
+      </div>
+    } @else {
+      <div class="grid" [class.dim]="loading()">
+        @for (p of items(); track p.id; let i = $index) {
+          <app-product-card [product]="p" [index]="i % 12" />
+        }
+      </div>
+      @if (hasMore()) {
+        <button type="button" class="btn more" (click)="loadMore()" [disabled]="loadingMore()">
+          {{ loadingMore() ? 'Carregando…' : 'Carregar mais rações' }}
+        </button>
+      }
+    }
+  </main>
+</div>
+
+<!-- Filtros no celular: gaveta que sobe de baixo -->
+<div class="sheet" [class.open]="sheetOpen()" [attr.inert]="sheetOpen() ? null : ''">
+  <div class="sheet__backdrop" (click)="sheetOpen.set(false)" aria-hidden="true"></div>
+  <div class="sheet__panel" role="dialog" aria-modal="true" aria-label="Filtros">
+    <div class="sheet__head">
+      <h2>Filtros</h2>
+      <button type="button" class="x" (click)="sheetOpen.set(false)" aria-label="Fechar filtros">✕</button>
+    </div>
+    <div class="sheet__body">
+      <app-catalog-filters [filters]="filters()" [facets]="facets()" (changed)="update($event)" (cleared)="clearAll()" />
+    </div>
+    <div class="sheet__foot">
+      <button type="button" class="btn btn--gold" (click)="sheetOpen.set(false)">
+        Ver {{ loading() ? '…' : total() }} {{ total() === 1 ? 'resultado' : 'resultados' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+@if (cart.count() > 0 && !cart.isOpen()) {
+  <button type="button" class="float-cart" (click)="openCart()">
+    🛒 Ver carrinho · {{ cart.count() }} {{ cart.count() === 1 ? 'item' : 'itens' }} · {{ money(cart.estimate()) }}
+  </button>
+}
+
+<app-cart-drawer />
+
+@if (toast.message(); as msg) {
+  <div class="toast" role="status">{{ msg }}</div>
+}

@@ -1,4 +1,4 @@
-﻿// Mobile first: base = celular; desktop so em @media (min-width)
+// Mobile first: base = celular; desktop so em @media (min-width)
 
 .nav {
   position: fixed;
@@ -191,6 +191,11 @@
         transform: scaleX(0);
         transform-origin: right;
         transition: transform 0.5s var(--ease-out);
+      }
+
+      &.store {
+        color: var(--gold);
+        font-weight: 600;
       }
 
       &:hover {

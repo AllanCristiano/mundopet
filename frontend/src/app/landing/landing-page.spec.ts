@@ -1,3 +1,4 @@
+import { provideRouter } from '@angular/router';
 import { TestBed } from '@angular/core/testing';
 
 import { ANATOMY_LAYERS, CHAPTERS, NAV_LINKS, STATS, TESTIMONIALS, WHATSAPP_URL } from './landing.data';
@@ -8,6 +9,8 @@ import { LandingNav } from './sections/landing-nav';
 import { makeParticles } from './sections/landing-hero';
 
 describe('LandingPage', () => {
+  beforeEach(() => TestBed.configureTestingModule({ providers: [provideRouter([])] }));
+
   function render() {
     const fixture = TestBed.createComponent(LandingPage);
     fixture.detectChanges();
@@ -29,7 +32,7 @@ describe('LandingPage', () => {
 
   it('todo link do menu aponta para uma secao existente', () => {
     const { el } = render();
-    for (const link of NAV_LINKS) {
+    for (const link of NAV_LINKS.filter((l) => l.href.startsWith('#'))) {
       expect(el.querySelector(link.href)).withContext(link.href).not.toBeNull();
     }
   });

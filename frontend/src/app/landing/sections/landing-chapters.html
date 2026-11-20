@@ -65,7 +65,11 @@
             <li [appReveal]="250 + j * 90">{{ f }}</li>
           }
         </ul>
-        <a class="btn" [href]="whatsapp" target="_blank" rel="noopener" [appReveal]="600">{{ c.cta }} <span aria-hidden="true">→</span></a>
+        @if (c.scene === 'food') {
+          <a class="btn btn--gold" routerLink="/racoes" [appReveal]="600">{{ c.cta }} <span aria-hidden="true">→</span></a>
+        } @else {
+          <a class="btn" [href]="whatsapp" target="_blank" rel="noopener" [appReveal]="600">{{ c.cta }} <span aria-hidden="true">→</span></a>
+        }
       </div>
     </div>
   </section>

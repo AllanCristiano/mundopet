@@ -69,6 +69,17 @@ O nginx serve a pasta `dist/` em **`/download/`**, então assim que o APK é ger
 A URL da API embutida no APK vem de `MOBILE_API_URL` (padrão `http://10.0.2.2:8088`, o host visto pelo emulador).
 Para celular físico use o IP da máquina na rede, ex.: `MOBILE_API_URL=http://192.168.0.10:8088`.
 
+## Loja de rações (`/racoes`)
+
+Catálogo com busca (ignora acentos), filtros (espécie, idade, porte, linha, marca, preço, só promoções), ordenação,
+vitrine de ofertas com contagem regressiva e carrinho salvo no aparelho. O pedido vai para o **WhatsApp** da loja
+como uma mensagem formatada (itens, quantidade, preço unitário "de/por", subtotais, descontos e total).
+
+- Preços e totais são **recalculados no servidor** (`POST /api/catalog/cart/quote`); o navegador não define preço.
+- Produtos de exemplo (marcas fictícias) vêm de `backend/src/main/resources/db/seed/R__catalog_seed.sql`.
+  Em produção use `FLYWAY_LOCATIONS=classpath:db/migration` e cadastre os produtos reais.
+- Número do WhatsApp: `WHATSAPP_PHONE` em `frontend/src/app/landing/landing.data.ts`.
+
 ## Fila (chamadas assíncronas)
 
 ```bash

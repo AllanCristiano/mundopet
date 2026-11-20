@@ -1,0 +1,264 @@
+// Mobile first: 2 cards por linha no celular (definido no grid da pagina).
+
+:host {
+  display: block;
+}
+
+.card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  background: var(--bg-2);
+  overflow: hidden;
+  opacity: 0;
+  transform: translateY(24px);
+  animation: card-in 0.7s var(--ease-out) forwards;
+  animation-delay: calc(min(var(--i), 11) * 45ms);
+  transition:
+    transform 0.4s var(--ease-out),
+    box-shadow 0.4s,
+    border-color 0.4s;
+
+  &:hover {
+    border-color: color-mix(in srgb, var(--c) 55%, var(--line));
+    box-shadow: 0 24px 50px -28px color-mix(in srgb, var(--c) 70%, transparent);
+
+    .bag {
+      transform: translateY(-6px) rotate(-4deg) scale(1.04);
+    }
+
+    .glow {
+      opacity: 0.55;
+      transform: scale(1.1);
+    }
+  }
+
+  &.out {
+    filter: grayscale(0.7);
+    opacity: 0.75;
+  }
+}
+
+.media {
+  position: relative;
+  display: grid;
+  place-items: center;
+  aspect-ratio: 1 / 0.92;
+  background: radial-gradient(circle at 50% 60%, color-mix(in srgb, var(--c) 22%, transparent), transparent 70%);
+}
+
+.glow {
+  position: absolute;
+  inset: 22%;
+  border-radius: 50%;
+  background: var(--c);
+  filter: blur(34px);
+  opacity: 0.3;
+  transition:
+    opacity 0.5s,
+    transform 0.5s var(--ease-out);
+}
+
+.bag {
+  position: relative;
+  width: 58%;
+  aspect-ratio: 120 / 150;
+  transition: transform 0.6s var(--ease-out);
+}
+
+.badges {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  right: 10px;
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.badge {
+  padding: 4px 9px;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+
+  &.promo {
+    background: var(--btn-gold);
+    color: var(--on-gold);
+    animation: wiggle 3s ease-in-out infinite;
+  }
+
+  &.out {
+    background: var(--ink);
+    color: var(--bg);
+  }
+
+  &.vet {
+    margin-left: auto;
+    background: #7a5bd1;
+    color: #fff;
+  }
+}
+
+.body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 6px;
+  padding: 12px 12px 14px;
+}
+
+.brand {
+  margin: 0;
+  font-size: 0.66rem;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--gold);
+}
+
+h3 {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: 0.86rem;
+  font-weight: 600;
+  line-height: 1.3;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  min-height: 2.6em;
+}
+
+.meta {
+  display: none;
+  margin: 0;
+  gap: 4px;
+  flex-wrap: wrap;
+
+  span {
+    padding: 2px 8px;
+    border-radius: 999px;
+    border: 1px solid var(--line);
+    font-size: 0.68rem;
+    color: var(--muted);
+  }
+}
+
+.price {
+  display: grid;
+  margin-top: auto;
+  padding-top: 4px;
+
+  s {
+    font-size: 0.75rem;
+    color: var(--muted);
+  }
+
+  strong {
+    font-family: var(--font-display);
+    font-size: 1.3rem;
+    line-height: 1.1;
+  }
+
+  small {
+    font-size: 0.68rem;
+    color: var(--muted);
+  }
+}
+
+.add,
+.stepper {
+  min-height: 44px;
+  margin-top: 8px;
+  border-radius: 12px;
+}
+
+.add {
+  border: 0;
+  background: var(--btn-gold);
+  color: var(--on-gold);
+  font: 700 0.82rem var(--font-body);
+  cursor: pointer;
+  transition: transform 0.2s;
+
+  &:active {
+    transform: scale(0.96);
+  }
+
+  &:disabled {
+    background: var(--bg-3);
+    color: var(--muted);
+    cursor: not-allowed;
+  }
+}
+
+.stepper {
+  display: grid;
+  grid-template-columns: 44px 1fr 44px;
+  align-items: center;
+  border: 1px solid var(--btn-gold);
+  animation: pop 0.35s var(--ease-out);
+
+  button {
+    height: 42px;
+    border: 0;
+    background: none;
+    color: var(--ink);
+    font-size: 1.05rem;
+    cursor: pointer;
+  }
+
+  output {
+    text-align: center;
+    font-weight: 700;
+  }
+}
+
+@media (min-width: 768px) {
+  .body {
+    padding: 16px;
+  }
+
+  h3 {
+    font-size: 0.95rem;
+  }
+
+  .meta {
+    display: flex;
+  }
+}
+
+@keyframes card-in {
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes pop {
+  0% {
+    transform: scale(0.9);
+  }
+  60% {
+    transform: scale(1.04);
+  }
+}
+
+@keyframes wiggle {
+  0%,
+  86%,
+  100% {
+    rotate: 0deg;
+  }
+  90% {
+    rotate: -6deg;
+  }
+  95% {
+    rotate: 5deg;
+  }
+}

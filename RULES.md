@@ -1,4 +1,4 @@
-﻿# Regras do projeto MundoPet
+# Regras do projeto MundoPet
 
 Estas regras são **obrigatórias**. Um PR que viole qualquer item marcado com **[BLOQUEANTE]** não pode ser mergeado.
 

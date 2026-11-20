@@ -1,4 +1,4 @@
-﻿# MundoPet - stack completa
+# MundoPet - stack completa
 #   Subir:            docker compose up -d --build
 #   Escalar a API:    docker compose up -d --scale api=6     (minimo 1, MAXIMO 6 - ver RULES.md)
 #                     ou ./scripts/scale.ps1 6  |  ./scripts/scale.sh 6

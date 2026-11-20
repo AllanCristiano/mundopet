@@ -21,6 +21,8 @@ spring:
 
   # Flyway usa JDBC so na subida (lock consultivo no Postgres => seguro com varias replicas)
   flyway:
+    # db/seed = dados de EXEMPLO do catalogo. Em producao: FLYWAY_LOCATIONS=classpath:db/migration
+    locations: ${FLYWAY_LOCATIONS:classpath:db/migration,classpath:db/seed}
     url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:mundopet}
     user: ${DB_USER:mundopet}
     password: ${DB_PASSWORD:mundopet}

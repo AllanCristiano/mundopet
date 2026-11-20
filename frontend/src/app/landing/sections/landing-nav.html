@@ -6,7 +6,11 @@
 
     <nav class="links" aria-label="Serviços">
       @for (link of links; track link.href) {
-        <a [href]="link.href">{{ link.label }}</a>
+        @if (link.href.startsWith('/')) {
+          <a [routerLink]="link.href" class="store">{{ link.label }}</a>
+        } @else {
+          <a [href]="link.href">{{ link.label }}</a>
+        }
       }
     </nav>
 
@@ -31,9 +35,15 @@
 <div id="menu-mobile" class="menu" [attr.aria-hidden]="!open()" [attr.inert]="open() ? null : ''">
   <nav aria-label="Menu">
     @for (link of links; track link.href; let i = $index) {
-      <a [href]="link.href" [style.--i]="i" (click)="close()">
-        <small>0{{ i + 1 }}</small>{{ link.label }}
-      </a>
+      @if (link.href.startsWith('/')) {
+        <a [routerLink]="link.href" [style.--i]="i" (click)="close()">
+          <small>0{{ i + 1 }}</small>{{ link.label }} 🛒
+        </a>
+      } @else {
+        <a [href]="link.href" [style.--i]="i" (click)="close()">
+          <small>0{{ i + 1 }}</small>{{ link.label }}
+        </a>
+      }
     }
   </nav>
   <a class="btn btn--gold" [href]="whatsapp" target="_blank" rel="noopener" (click)="close()">Agendar visita</a>
