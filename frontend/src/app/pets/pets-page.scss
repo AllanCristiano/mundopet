@@ -1,4 +1,4 @@
-:host {
+﻿:host {
   display: block;
   max-width: 800px;
   margin: 0 auto;
@@ -64,8 +64,8 @@ button {
   min-height: 48px;
   border: 0;
   border-radius: 999px;
-  background: var(--gold);
-  color: var(--bg);
+  background: var(--btn-gold);
+  color: var(--on-gold);
   font-weight: 600;
   cursor: pointer;
 }

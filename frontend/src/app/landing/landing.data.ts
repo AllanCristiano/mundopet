@@ -1,4 +1,4 @@
-// Conteudo da landing page. Edite aqui sem mexer nos componentes.
+﻿// Conteudo da landing page. Edite aqui sem mexer nos componentes.
 // TODO(negocio): substituir telefone, numeros e depoimentos pelos dados REAIS da loja antes de publicar.
 
 export type ArtKind = 'dog' | 'cat' | 'house' | 'bowl' | 'scissors' | 'heart';
@@ -11,9 +11,30 @@ export const NAV_LINKS = [
   { label: 'Rações', href: '#racoes' },
   { label: 'Beleza', href: '#beleza' },
   { label: 'Veterinário', href: '#veterinario' },
+  { label: 'App', href: '#app' },
 ];
 
-export const PILLARS = ['Hospedagem', 'Nutrição', 'Beleza', 'Saúde'];
+export const SERVICES = ['Hotel', 'Rações', 'Banho & Tosa', 'Veterinário', 'Day Care', 'Spa'];
+
+/**
+ * Endereco e localizacao da loja (rodape + mapa).
+ * TODO(negocio): PROVISORIO - substituir pelo endereco e coordenadas reais.
+ * Para pegar lat/lng: Google Maps > clique com o botao direito no ponto > copiar coordenadas.
+ */
+export const STORE = {
+  name: 'MundoPet',
+  street: 'Rua Exemplo, 123',
+  district: 'Centro',
+  city: 'São Paulo',
+  state: 'SP',
+  zip: '01000-000',
+  hours: 'Seg a Sáb · 8h às 20h',
+  clinicHours: 'Clínica: 24 horas',
+  lat: -23.5505,
+  lng: -46.6333,
+};
+
+export const PILLARS =['Hospedagem', 'Nutrição', 'Beleza', 'Saúde'];
 
 /** Camadas da "anatomia do cuidado", de cima para baixo. O pet fica no centro. */
 export const ANATOMY_LAYERS: { art: ArtKind; label: string; text: string; center?: boolean }[] = [

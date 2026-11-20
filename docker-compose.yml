@@ -109,6 +109,9 @@ services:
     image: mundopet-nginx:latest
     ports:
       - "${HTTP_PORT:-8088}:80"
+    volumes:
+      # APK gerado pelo perfil "mobile" fica disponivel em /download/mundopet.apk sem rebuild
+      - ./dist:/usr/share/nginx/downloads:ro
     depends_on:
       api: { condition: service_healthy }
     deploy:

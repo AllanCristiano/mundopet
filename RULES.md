@@ -136,4 +136,8 @@ stack:     docker compose up -d --build && docker compose --profile dos run --rm
 
 8.8 Desempenho no celular: a landing deve ficar abaixo de **150 kB comprimidos** de JS inicial + rota, e as imagens novas devem ser `webp/avif` com `loading="lazy"` (exceto a primeira dobra).
 
-8.9 Ilustrações decorativas usam `aria-hidden="true"`; as que comunicam algo têm `role="img"` + `aria-label`. Hierarquia de títulos: um único `h1` por página.
+8.9 **[BLOQUEANTE]** Toda tela suporta **tema claro e escuro**. Cores só via tokens CSS (`--bg`, `--ink`, `--muted`, `--line`, `--gold`, `--glass`…) definidos em `styles.scss`; é proibido cor fixa (hex/rgba) que dependa do tema dentro de componentes. Verificar as duas variações antes do PR. O tema segue: escolha salva > preferência do sistema > escuro.
+
+8.10 Link para arquivo (ex.: APK em `/download/`) só é exibido como clicável se o arquivo existir de fato; senão o botão mostra "em breve" (nunca link quebrado).
+
+8.11 Ilustrações decorativas usam `aria-hidden="true"`; as que comunicam algo têm `role="img"` + `aria-label`. Hierarquia de títulos: um único `h1` por página.

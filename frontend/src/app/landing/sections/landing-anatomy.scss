@@ -1,4 +1,4 @@
-// Mobile first. --p (0..1) e data-step vem do ScrollProgressDirective.
+﻿// Mobile first. --p (0..1) e data-step vem do ScrollProgressDirective.
 // --e = quanto as camadas ja "explodiram" (0..1), completo em ~22% do scroll da secao.
 
 .anatomy {
@@ -82,7 +82,7 @@
   padding: 14px 18px;
   border: 1px solid var(--line);
   border-radius: 14px;
-  background: rgba(21, 17, 13, 0.82);
+  background: var(--glass);
   backdrop-filter: blur(8px);
   opacity: 0;
   transform: translateY(24px);

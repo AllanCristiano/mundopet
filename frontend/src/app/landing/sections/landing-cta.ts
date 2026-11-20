@@ -1,13 +1,14 @@
-import { Component } from '@angular/core';
+﻿import { Component } from '@angular/core';
 
-import { NAV_LINKS, WHATSAPP_URL } from '../landing.data';
+import { NAV_LINKS, STORE, WHATSAPP_URL } from '../landing.data';
 import { RevealDirective } from '../motion/reveal.directive';
 import { PetArt } from '../pet-art';
 import { makeParticles } from './landing-hero';
+import { LandingMap } from './landing-map';
 
 @Component({
   selector: 'app-landing-cta',
-  imports: [RevealDirective, PetArt],
+  imports: [RevealDirective, PetArt, LandingMap],
   template: `
     <section class="cta" aria-labelledby="cta-title">
       <div class="bokeh" aria-hidden="true">
@@ -48,10 +49,12 @@ import { makeParticles } from './landing-hero';
           }
         </nav>
         <div class="muted">
-          <p>Seg a Sáb · 8h às 20h<br />Clínica: 24 horas</p>
-          <!-- TODO(negocio): endereco real -->
-          <p>Endereço da loja · Cidade/UF</p>
+          <p>{{ store.hours }}<br />{{ store.clinicHours }}</p>
+          <p>{{ store.city }}/{{ store.state }}</p>
         </div>
+      </div>
+      <div class="container">
+        <app-landing-map />
       </div>
       <p class="container copy muted">© {{ year }} MundoPet. Feito com carinho para quem tem quatro patas.</p>
     </footer>
@@ -93,6 +96,7 @@ import { makeParticles } from './landing-hero';
 export class LandingCta {
   readonly whatsapp = WHATSAPP_URL;
   readonly links = NAV_LINKS;
+  readonly store = STORE;
   readonly petals = makeParticles(18, 42);
   readonly year = new Date().getFullYear();
 }

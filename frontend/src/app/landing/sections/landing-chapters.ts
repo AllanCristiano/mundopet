@@ -1,6 +1,6 @@
-import { Component } from '@angular/core';
+﻿import { Component } from '@angular/core';
 
-import { CHAPTERS, NAV_LINKS, WHATSAPP_URL } from '../landing.data';
+import { CHAPTERS, SERVICES, WHATSAPP_URL } from '../landing.data';
 import { RevealDirective } from '../motion/reveal.directive';
 import { ScrollProgressDirective } from '../motion/scroll-progress.directive';
 import { PetArt } from '../pet-art';
@@ -15,7 +15,7 @@ export class LandingChapters {
   readonly chapters = CHAPTERS;
   readonly whatsapp = WHATSAPP_URL;
   /** Faixa infinita: repetida para o loop nao ter emenda. */
-  readonly marquee = [...NAV_LINKS, ...NAV_LINKS, ...NAV_LINKS].map((l) => l.label);
+  readonly marquee = [...SERVICES, ...SERVICES, ...SERVICES];
   /** Quantidade de elementos decorativos animados por cena (estrelas, racao, bolhas...). */
   readonly bits = Array.from({ length: 12 }, (_, i) => i);
 }

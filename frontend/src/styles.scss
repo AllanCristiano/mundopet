@@ -24,7 +24,35 @@
   --nav-h: 64px;
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
 
+  // iguais nos dois temas (botao dourado e cenas "noturnas" dos capitulos)
+  --btn-gold: #e3b062;
+  --btn-gold-hover: #f7d79f;
+  --on-gold: #1a1208;
+  --glass: rgba(11, 9, 8, 0.72);
+  --stage-dim: rgba(245, 238, 228, 0.18);
+
   color-scheme: dark;
+}
+
+// ---------------- Tema claro ----------------
+// Mesmo clima premium, em creme e dourado escuro (contraste AA sobre o fundo claro).
+:root[data-theme='light'] {
+  --bg: #faf6ef;
+  --bg-2: #f2ebdf;
+  --bg-3: #e8dcc8;
+  --ink: #1d1712;
+  --muted: #5f5347;
+  --line: rgba(29, 23, 18, 0.14);
+  --gold: #9a6418;
+  --gold-2: #8a5612;
+  --hotel: #3354c4;
+  --food: #9a6418;
+  --beauty: #b8346c;
+  --vet: #0f7d61;
+  --glass: rgba(250, 246, 239, 0.8);
+  --stage-dim: rgba(29, 23, 18, 0.2);
+
+  color-scheme: light;
 }
 
 @media (min-width: 768px) {
@@ -57,6 +85,9 @@ body {
   overflow-x: clip;
   -webkit-font-smoothing: antialiased;
   -webkit-tap-highlight-color: transparent;
+  transition:
+    background-color 0.6s var(--ease-out),
+    color 0.6s var(--ease-out);
 }
 
 img,
@@ -131,15 +162,21 @@ em {
   }
 
   &--gold {
-    border-color: var(--gold);
-    background: var(--gold);
-    color: var(--bg);
+    border-color: var(--btn-gold);
+    background: var(--btn-gold);
+    color: var(--on-gold);
 
     &:hover,
     &:focus-visible {
-      background: var(--gold-2);
-      border-color: var(--gold-2);
+      background: var(--btn-gold-hover);
+      border-color: var(--btn-gold-hover);
+      color: var(--on-gold);
     }
+  }
+
+  &[aria-disabled='true'] {
+    opacity: 0.5;
+    pointer-events: none;
   }
 }
 

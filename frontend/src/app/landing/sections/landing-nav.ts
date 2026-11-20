@@ -1,9 +1,11 @@
 import { Component, ElementRef, NgZone, OnDestroy, OnInit, inject, signal } from '@angular/core';
 
+import { ThemeToggle } from '../../core/theme-toggle';
 import { NAV_LINKS, WHATSAPP_URL } from '../landing.data';
 
 @Component({
   selector: 'app-landing-nav',
+  imports: [ThemeToggle],
   templateUrl: './landing-nav.html',
   styleUrl: './landing-nav.scss',
   host: { '[class.menu-open]': 'open()' },

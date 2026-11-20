@@ -63,6 +63,9 @@ docker compose --profile dos run --rm k6     # DoS contra a stack completa (500 
 docker compose --profile mobile run --rm flutter-apk     # gera dist/mundopet.apk
 ```
 
+O nginx serve a pasta `dist/` em **`/download/`**, então assim que o APK é gerado ele já aparece na landing
+(seção "O MundoPet no seu bolso") como **Baixar para Android**, sem rebuild. Enquanto não existir, o botão mostra "em breve".
+
 A URL da API embutida no APK vem de `MOBILE_API_URL` (padrão `http://10.0.2.2:8088`, o host visto pelo emulador).
 Para celular físico use o IP da máquina na rede, ex.: `MOBILE_API_URL=http://192.168.0.10:8088`.
 

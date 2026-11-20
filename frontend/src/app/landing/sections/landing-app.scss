@@ -1,0 +1,325 @@
+// Mobile first. --p (0..1) do ScrollProgressDirective: o celular gira levemente enquanto passa pela tela.
+
+.app {
+  position: relative;
+  overflow: hidden;
+  padding: 100px 0 110px;
+  --p: 0.5;
+  background: radial-gradient(ellipse at 30% 40%, color-mix(in srgb, var(--gold) 14%, transparent), transparent 60%);
+}
+
+.grid {
+  display: grid;
+  gap: 56px;
+}
+
+// ---------- Celular ----------
+.phone-wrap {
+  position: relative;
+  justify-self: center;
+  width: min(68vw, 270px);
+  aspect-ratio: 9 / 18.5;
+  perspective: 1200px;
+}
+
+.ring {
+  position: absolute;
+  inset: -18%;
+  border-radius: 50%;
+  border: 1px dashed color-mix(in srgb, var(--gold) 45%, transparent);
+  animation: spin 40s linear infinite;
+}
+
+.phone {
+  position: absolute;
+  inset: 0;
+  padding: 10px;
+  border-radius: 38px;
+  background: #0f0c0a;
+  border: 1px solid rgba(245, 238, 228, 0.18);
+  box-shadow:
+    0 40px 80px -30px rgba(0, 0, 0, 0.6),
+    0 0 0 6px rgba(227, 176, 98, 0.12);
+  transform: rotateY(calc((var(--p) - 0.5) * -40deg)) rotateX(calc((var(--p) - 0.5) * 14deg));
+  animation: hover 6s ease-in-out infinite;
+
+  &.reveal {
+    transform: translateY(80px) rotate(8deg);
+  }
+
+  &.reveal.is-visible {
+    transform: rotateY(calc((var(--p) - 0.5) * -40deg)) rotateX(calc((var(--p) - 0.5) * 14deg));
+  }
+}
+
+.notch {
+  position: absolute;
+  top: 18px;
+  left: 50%;
+  width: 34%;
+  height: 18px;
+  translate: -50% 0;
+  border-radius: 99px;
+  background: #000;
+  z-index: 2;
+}
+
+// Tela do app (fiel ao app Flutter: Material 3, verde-dourado)
+.screen {
+  position: relative;
+  height: 100%;
+  overflow: hidden;
+  border-radius: 30px;
+  background: #fbf8f3;
+  color: #1d1712;
+  font-size: 12px;
+
+  .bar {
+    padding: 44px 16px 14px;
+    background: #e9f0e4;
+    font-size: 15px;
+    font-weight: 600;
+  }
+
+  ul {
+    list-style: none;
+    margin: 0;
+    padding: 6px 0;
+  }
+
+  li {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    opacity: 0;
+    transform: translateX(-20px);
+    animation: item-in 0.6s var(--ease-out) forwards;
+    animation-delay: calc(0.6s + var(--i) * 0.15s);
+  }
+
+  .avatar {
+    display: grid;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: hsl(var(--h) 60% 85%);
+    font-size: 14px;
+  }
+
+  strong,
+  small {
+    display: block;
+  }
+
+  small {
+    color: #6b5f52;
+  }
+
+  .fab {
+    position: absolute;
+    right: 16px;
+    bottom: 18px;
+    display: grid;
+    place-items: center;
+    width: 46px;
+    height: 46px;
+    border-radius: 14px;
+    background: #cfe3c3;
+    font-size: 22px;
+    animation: pop 2.4s ease-in-out infinite;
+  }
+}
+
+.chip {
+  position: absolute;
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--glass);
+  backdrop-filter: blur(8px);
+  font-size: 0.75rem;
+  white-space: nowrap;
+  box-shadow: 0 10px 30px -12px rgba(0, 0, 0, 0.4);
+  animation: hover 5s ease-in-out infinite;
+
+  // na area vazia abaixo da lista, sem cobrir conteudo do app
+  &.c1 {
+    top: 56%;
+    left: -14%;
+  }
+
+  &.c2 {
+    bottom: 16%;
+    right: -18%;
+    animation-delay: -2.5s;
+  }
+}
+
+// ---------- Texto ----------
+h2 {
+  font-size: clamp(2.2rem, 9.5vw, 4.2rem);
+  margin: 12px 0 18px;
+}
+
+.text {
+  color: var(--muted);
+  max-width: 44ch;
+  margin: 0 0 24px;
+}
+
+.steps {
+  display: grid;
+  gap: 12px;
+  list-style: none;
+  padding: 0;
+  margin: 0 0 30px;
+
+  li {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  span {
+    display: grid;
+    place-items: center;
+    flex: none;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    border: 1px solid var(--gold);
+    color: var(--gold);
+    font-size: 0.8rem;
+  }
+}
+
+.stores {
+  display: grid;
+  gap: 12px;
+}
+
+.store {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  min-height: 56px;
+  padding: 0 22px;
+  border-radius: 16px;
+  border: 1px solid var(--line);
+  font-weight: 600;
+  font-size: 0.92rem;
+  text-decoration: none;
+  color: var(--muted);
+  transition:
+    transform 0.3s var(--ease-out),
+    box-shadow 0.3s;
+
+  svg {
+    width: 24px;
+    height: 24px;
+    fill: currentColor;
+    flex: none;
+  }
+
+  &[aria-disabled='true'] {
+    cursor: not-allowed;
+  }
+
+  &--android.is-ready {
+    border-color: var(--btn-gold);
+    background: var(--btn-gold);
+    color: var(--on-gold);
+    box-shadow: 0 14px 40px -12px rgba(227, 176, 98, 0.7);
+    position: relative;
+    overflow: hidden;
+
+    // brilho passando no botao para chamar o toque
+    &::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(110deg, transparent 30%, rgba(255, 255, 255, 0.55) 50%, transparent 70%);
+      transform: translateX(-120%);
+      animation: shine 3.2s ease-in-out infinite;
+    }
+
+    &:hover {
+      transform: translateY(-2px);
+    }
+
+    &:active {
+      transform: scale(0.97);
+    }
+  }
+}
+
+.desktop-hint {
+  display: none;
+  margin: 16px 0 0;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+// ---------- Desktop ----------
+@media (min-width: 900px) {
+  .app {
+    padding: 150px 0;
+  }
+
+  .grid {
+    grid-template-columns: 1fr 1.1fr;
+    align-items: center;
+    gap: 90px;
+  }
+
+  .phone-wrap {
+    width: 300px;
+  }
+
+  .stores {
+    grid-template-columns: auto auto;
+    justify-content: start;
+  }
+
+  .desktop-hint {
+    display: block;
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes hover {
+  50% {
+    translate: 0 -10px;
+  }
+}
+
+@keyframes item-in {
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes pop {
+  50% {
+    transform: scale(1.08);
+  }
+}
+
+@keyframes shine {
+  0%,
+  60% {
+    transform: translateX(-120%);
+  }
+  100% {
+    transform: translateX(120%);
+  }
+}

@@ -2,6 +2,8 @@ import { TestBed } from '@angular/core/testing';
 
 import { ANATOMY_LAYERS, CHAPTERS, NAV_LINKS, STATS, TESTIMONIALS, WHATSAPP_URL } from './landing.data';
 import { LandingPage } from './landing-page';
+import { APK_URL, AppDownloadService } from '../core/app-download.service';
+import { LandingApp } from './sections/landing-app';
 import { LandingNav } from './sections/landing-nav';
 import { makeParticles } from './sections/landing-hero';
 
@@ -73,6 +75,47 @@ describe('LandingPage', () => {
   it('particulas sao deterministicas', () => {
     expect(makeParticles(5)).toEqual(makeParticles(5));
     expect(makeParticles(5, 1)).not.toEqual(makeParticles(5, 2));
+  });
+
+  describe('secao do aplicativo', () => {
+    async function renderWith(state: 'available' | 'unavailable', sizeMb: number | null = null) {
+      const service = TestBed.inject(AppDownloadService);
+      spyOn(service, 'check').and.callFake(async () => {
+        service.state.set(state);
+        service.sizeMb.set(sizeMb);
+        return state;
+      });
+      const fixture = TestBed.createComponent(LandingApp);
+      fixture.detectChanges();
+      await fixture.whenStable();
+      fixture.detectChanges();
+      return fixture.nativeElement as HTMLElement;
+    }
+
+    it('com APK publicado: link de download direto com tamanho', async () => {
+      const el = await renderWith('available', 21.4);
+      const a = el.querySelector<HTMLAnchorElement>('.store--android')!;
+      expect(a.getAttribute('href')).toBe(APK_URL);
+      expect(a.hasAttribute('download')).toBeTrue();
+      expect(a.getAttribute('aria-disabled')).toBeNull();
+      expect(a.textContent).toContain('21,4 MB');
+    });
+
+    it('sem APK: botao desabilitado "em breve" e sem link quebrado', async () => {
+      const el = await renderWith('unavailable');
+      const a = el.querySelector<HTMLAnchorElement>('.store--android')!;
+      expect(a.hasAttribute('href')).toBeFalse();
+      expect(a.getAttribute('aria-disabled')).toBe('true');
+      expect(a.textContent).toContain('em breve');
+    });
+
+    it('mostra "verificando" enquanto confere', () => {
+      const service = TestBed.inject(AppDownloadService);
+      spyOn(service, 'check').and.returnValue(new Promise(() => undefined));
+      const fixture = TestBed.createComponent(LandingApp);
+      fixture.detectChanges();
+      expect((fixture.nativeElement as HTMLElement).textContent).toContain('Verificando');
+    });
   });
 
   describe('nav', () => {

@@ -1,4 +1,4 @@
-// Mobile first: base = celular; desktop so em @media (min-width)
+﻿// Mobile first: base = celular; desktop so em @media (min-width)
 
 .nav {
   position: fixed;
@@ -13,7 +13,7 @@
 }
 
 :host(.is-scrolled) .nav {
-  background: rgba(11, 9, 8, 0.72);
+  background: var(--glass);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
   border-color: var(--line);
@@ -44,6 +44,16 @@
 .links,
 .cta-desktop {
   display: none;
+}
+
+.tools {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-left: auto;
+  margin-right: 4px;
+  position: relative;
+  z-index: 60; // continua acessivel com o menu mobile aberto
 }
 
 .burger {
@@ -197,6 +207,10 @@
   .cta-desktop {
     display: inline-flex;
     min-height: 42px;
+  }
+
+  .tools {
+    margin: 0;
   }
 }
 
