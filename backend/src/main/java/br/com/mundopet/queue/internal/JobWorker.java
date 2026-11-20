@@ -81,15 +81,17 @@ class JobWorker implements SmartLifecycle {
                 Integer.parseInt(v.getOrDefault("attempts", "0")));
         JobHandler handler = handlers.get(job.type());
 
+        // Sem handler nesta replica (ex.: deploy gradual com versoes diferentes): devolve para a fila
+        // em vez de falhar, para que outra replica que conheca o tipo possa processar.
         Mono<Void> work = handler == null
-                ? queue.saveState(job, JobState.FAILED, "Sem handler para " + job.type())
+                ? retryOrFail(job, new IllegalStateException("Sem handler para " + job.type()))
                 : queue.saveState(job, JobState.RUNNING, null)
                         .then(Mono.defer(() -> handler.handle(job)).timeout(props.jobTimeout()))
-                        .then(queue.saveState(job, JobState.DONE, null))
+                        .then(Mono.defer(() -> queue.saveState(job, JobState.DONE, null)))
                         .onErrorResume(ex -> retryOrFail(job, ex));
 
         return work
-                .then(redis.opsForStream().acknowledge(props.stream(), props.group(), record.getId()))
+                .then(Mono.defer(() -> redis.opsForStream().acknowledge(props.stream(), props.group(), record.getId())))
                 .then()
                 .onErrorResume(ex -> {
                     log.error("Erro ao processar job {}", job.id(), ex);
@@ -102,10 +104,11 @@ class JobWorker implements SmartLifecycle {
         String error = ex.getClass().getSimpleName() + ": " + ex.getMessage();
         if (next.attempts() < props.maxAttempts()) {
             log.warn("Job {} falhou (tentativa {}), reenfileirando", job.id(), next.attempts());
-            return queue.saveState(next, JobState.QUEUED, error).then(queue.push(props.stream(), next));
+            return queue.saveState(next, JobState.QUEUED, error).then(Mono.defer(() -> queue.push(props.stream(), next)));
         }
         log.error("Job {} falhou definitivamente, enviando para DLQ", job.id());
-        return queue.saveState(next, JobState.FAILED, error).then(queue.push(props.deadLetterStream(), next));
+        return queue.saveState(next, JobState.FAILED, error)
+                .then(Mono.defer(() -> queue.push(props.deadLetterStream(), next)));
     }
 
     private Mono<Void> createGroup() {

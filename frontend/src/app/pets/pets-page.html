@@ -1,0 +1,37 @@
+<section class="card">
+  <h2>Novo pet</h2>
+  <form [formGroup]="form" (ngSubmit)="submit()">
+    <label>Nome <input formControlName="name" name="name" /></label>
+    <label>Especie <input formControlName="species" name="species" /></label>
+    <label>Raca <input formControlName="breed" name="breed" /></label>
+    <button type="submit" [disabled]="saving()">{{ saving() ? 'Salvando...' : 'Cadastrar' }}</button>
+  </form>
+</section>
+
+@if (error()) {
+  <p class="error" role="alert">{{ error() }}</p>
+}
+
+<section class="card">
+  <h2>Pets</h2>
+  @if (loading()) {
+    <p>Carregando...</p>
+  } @else {
+    <ul class="pets">
+      @for (pet of pets(); track pet.id) {
+        <li>
+          @if (pet.photoKey) {
+            <img [src]="photoUrl(pet)" [alt]="pet.name" width="64" height="64" />
+          }
+          <div>
+            <strong>{{ pet.name }}</strong> <span>{{ pet.species }}</span>
+            @if (pet.breed) { <small> - {{ pet.breed }}</small> }
+          </div>
+          <input type="file" accept="image/png,image/jpeg,image/webp" (change)="onPhoto(pet, $event)" />
+        </li>
+      } @empty {
+        <li class="empty">Nenhum pet cadastrado.</li>
+      }
+    </ul>
+  }
+</section>

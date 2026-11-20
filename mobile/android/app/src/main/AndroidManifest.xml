@@ -1,6 +1,9 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <uses-permission android:name="android.permission.INTERNET" />
+    <!-- usesCleartextTraffic: apenas para desenvolvimento (HTTP). Em producao a API deve ser HTTPS (RULES.md). -->
     <application
-        android:label="mundopet_mobile"
+        android:label="MundoPet"
+        android:usesCleartextTraffic="true"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

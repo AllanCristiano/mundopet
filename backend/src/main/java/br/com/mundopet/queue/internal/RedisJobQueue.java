@@ -2,12 +2,12 @@ package br.com.mundopet.queue.internal;
 
 import java.time.Instant;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.data.redis.connection.stream.StreamRecords;
 import org.springframework.data.redis.core.ReactiveStringRedisTemplate;
 import org.springframework.stereotype.Service;
@@ -26,16 +26,21 @@ class RedisJobQueue implements JobQueue {
 
     private final ReactiveStringRedisTemplate redis;
     private final QueueProperties props;
-    private final Set<String> knownTypes;
+    private final ObjectProvider<JobHandler> handlers;
+    private volatile Set<String> knownTypes;
 
-    RedisJobQueue(ReactiveStringRedisTemplate redis, QueueProperties props, List<JobHandler> handlers) {
+    /** ObjectProvider evita ciclo: handlers dependem de servicos que dependem da fila. */
+    RedisJobQueue(ReactiveStringRedisTemplate redis, QueueProperties props, ObjectProvider<JobHandler> handlers) {
         this.redis = redis;
         this.props = props;
-        this.knownTypes = handlers.stream().map(JobHandler::type).collect(Collectors.toUnmodifiableSet());
+        this.handlers = handlers;
     }
 
     @Override
     public boolean supports(String type) {
+        if (knownTypes == null) {
+            knownTypes = handlers.stream().map(JobHandler::type).collect(Collectors.toUnmodifiableSet());
+        }
         return knownTypes.contains(type);
     }
 
@@ -46,7 +51,7 @@ class RedisJobQueue implements JobQueue {
         }
         Job job = new Job(UUID.randomUUID().toString(), type, payload == null ? "" : payload, 0);
         return saveState(job, JobState.QUEUED, null)
-                .then(push(props.stream(), job))
+                .then(Mono.defer(() -> push(props.stream(), job)))
                 .thenReturn(job.id())
                 .onErrorMap(ex -> new DependencyUnavailableException("Redis", ex));
     }
@@ -77,7 +82,7 @@ class RedisJobQueue implements JobQueue {
             fields.put("error", error);
         }
         return redis.<String, String>opsForHash().putAll(key, fields)
-                .then(redis.expire(key, props.statusTtl()))
+                .then(Mono.defer(() -> redis.expire(key, props.statusTtl())))
                 .then();
     }
 
