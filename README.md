@@ -6,10 +6,14 @@ Monólito modular com escala horizontal até 6 réplicas, totalmente assíncrono
                        ┌──────────────── docker compose ────────────────┐
  navegador ─┐          │                                                │
             ├─► nginx ─┼─► api ×1..6 (Spring WebFlux) ─┬─► Postgres (R2DBC, pool)
- APK ───────┘   :8088  │   ├ pets   (cadastro)         ├─► Redis (fila Streams + rate limit)
-                       │   ├ files  (fotos)            └─► MinIO (objetos)
-  SPA Angular servida  │   ├ queue  (jobs assíncronos)                  │
-  pelo próprio nginx   │   └ shared (erros, rate limit)                 │
+ APK ───────┘   :8088  │   ├ pets     (cadastro)       ├─► Redis (fila Streams + rate limit + caches)
+                       │   ├ catalog  (rações/pedido)  └─► MinIO (objetos)
+  SPA Angular servida  │   ├ address  (CEP)                             │
+  pelo próprio nginx   │   ├ delivery (taxa por km)                     │
+                       │   ├ beauty   (fotos/depoim.)                   │
+                       │   ├ files    (MinIO)                           │
+                       │   ├ queue    (jobs assíncronos)                │
+                       │   └ shared   (erros, rate limit, admin)        │
                        └────────────────────────────────────────────────┘
 ```
 
@@ -88,6 +92,22 @@ como uma mensagem formatada (itens, quantidade, preço unitário "de/por", subto
   e arredonda para cima em 0,1 km. Acima de `DELIVERY_MAX_KM` o envio é bloqueado (fora da área); se não der para
   localizar o CEP, a taxa vai como "a combinar". Configure no `.env`: `STORE_LAT`, `STORE_LNG`,
   `DELIVERY_PRICE_PER_KM`, `DELIVERY_MAX_KM`, `DELIVERY_ROAD_FACTOR`.
+
+## Espaço Beleza (`/beleza`)
+
+Galeria de fotos dos pets atendidos (banho, tosa, hidratação, spa) com filtro por serviço e foto ampliada
+(setas, teclado e arrastar no celular), mais os **depoimentos** dos tutores com nota média. A landing mostra uma
+vitrine com as últimas fotos e depoimentos.
+
+**Área da clínica: `/beleza/admin`** (não aparece no menu). Entra com o token `ADMIN_TOKEN` do `.env`
+(mínimo 24 caracteres; gere com `openssl rand -hex 24`). Sem token configurado, a área fica desligada.
+- **Fotos:** escolhe a foto no celular → preenche nome do pet, espécie e serviço → publica. A foto é reduzida no
+  navegador (sobe rápido no 4G) e o servidor **valida e reprocessa**: só aceita JPG/PNG de verdade, recusa imagens
+  gigantes, gera versão grande (1600 px) e miniatura (600 px) e **remove os metadados** (EXIF com GPS do celular).
+  Os arquivos ficam no **MinIO** (`beauty/{id}/full.jpg|thumb.jpg`) e são servidos pela API com cache no nginx.
+- **Depoimentos:** o que os clientes enviam pelo site entra **pendente**; a clínica aprova ou exclui. Elogio
+  recebido no WhatsApp pode ser cadastrado direto (já aprovado). Anti-spam: 3 envios por IP por hora + campo-isca.
+- Peça autorização ao tutor antes de publicar a foto do pet.
 
 ## Fila (chamadas assíncronas)
 

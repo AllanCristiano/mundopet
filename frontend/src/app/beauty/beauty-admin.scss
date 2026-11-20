@@ -1,0 +1,424 @@
+// Mobile first: a clinica usa muito pelo celular (foto tirada e enviada na hora).
+
+:host {
+  display: block;
+  min-height: 100svh;
+  padding-bottom: 64px;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+
+.muted {
+  color: var(--muted);
+}
+
+.small {
+  font-size: 0.78rem;
+}
+
+.bar {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  height: var(--nav-h);
+  background: var(--glass);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-bottom: 1px solid var(--line);
+}
+
+.bar__inner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: 100%;
+}
+
+.logo {
+  font-family: var(--font-display);
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  text-decoration: none;
+  white-space: nowrap;
+
+  span {
+    color: var(--gold);
+  }
+}
+
+.where {
+  display: none;
+}
+
+.tools {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-left: auto;
+}
+
+.out {
+  min-height: 40px;
+  padding: 0 14px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: none;
+  font-size: 0.8rem;
+}
+
+main {
+  padding-top: 28px;
+}
+
+.card {
+  display: grid;
+  gap: 16px;
+  margin-bottom: 20px;
+  padding: 20px;
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  background: var(--bg-2);
+
+  h2 {
+    font-size: 1.5rem;
+  }
+}
+
+label {
+  display: grid;
+  gap: 6px;
+  font-size: 0.85rem;
+
+  small {
+    color: var(--muted);
+  }
+}
+
+input,
+select,
+textarea {
+  width: 100%;
+  min-height: 48px;
+  padding: 10px 14px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--bg);
+  color: var(--ink);
+  font: inherit;
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.error {
+  margin: 0;
+  color: #ff8a80;
+  font-size: 0.85rem;
+}
+
+:host-context([data-theme='light']) .error {
+  color: #b3261e;
+}
+
+.ok {
+  margin: 0;
+  color: var(--vet);
+  font-weight: 600;
+  font-size: 0.88rem;
+}
+
+// ---------- login ----------
+.login {
+  max-width: 440px;
+  margin: 32px auto;
+  text-align: center;
+
+  h1 {
+    font-size: 2.2rem;
+  }
+
+  p {
+    margin: 0;
+  }
+
+  label {
+    text-align: left;
+  }
+}
+
+.lock {
+  font-size: 2.6rem;
+}
+
+// ---------- abas ----------
+.title {
+  margin-bottom: 18px;
+  font-size: clamp(2rem, 9vw, 3rem);
+}
+
+.tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 20px;
+
+  button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 48px;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    background: none;
+    font-size: 0.88rem;
+
+    &.on {
+      border-color: var(--beauty);
+      background: color-mix(in srgb, var(--beauty) 16%, transparent);
+      font-weight: 600;
+    }
+  }
+}
+
+.n {
+  min-width: 22px;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: var(--bg-3);
+  font-size: 0.72rem;
+
+  &.alert {
+    background: var(--beauty);
+    color: #1a1208;
+  }
+}
+
+// ---------- upload ----------
+.drop {
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-height: 180px;
+  overflow: hidden;
+  border: 2px dashed var(--line);
+  border-radius: 18px;
+  background: var(--bg);
+  cursor: pointer;
+  transition: border-color 0.25s;
+
+  &:hover,
+  &:focus-within {
+    border-color: var(--beauty);
+  }
+
+  &.has {
+    border-style: solid;
+  }
+
+  img {
+    width: 100%;
+    max-height: 360px;
+    object-fit: contain;
+  }
+
+  input {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    cursor: pointer;
+  }
+
+  .hint {
+    display: grid;
+    justify-items: center;
+    gap: 4px;
+    padding: 20px;
+    text-align: center;
+    font-weight: 600;
+
+    span {
+      font-size: 2rem;
+      color: var(--beauty);
+    }
+
+    small {
+      color: var(--muted);
+      font-weight: 400;
+    }
+  }
+}
+
+.fields {
+  display: grid;
+  gap: 14px;
+}
+
+// ---------- lista de fotos ----------
+.thumbs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  li {
+    position: relative;
+    overflow: hidden;
+    border-radius: 14px;
+    background: var(--bg-3);
+  }
+
+  img {
+    display: block;
+    width: 100%;
+    aspect-ratio: 1;
+    object-fit: cover;
+  }
+
+  .cap {
+    display: block;
+    padding: 8px 10px;
+    font-size: 0.75rem;
+  }
+
+  .none {
+    grid-column: 1 / -1;
+    padding: 20px;
+    background: none;
+  }
+}
+
+.del {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  min-width: 40px;
+  height: 40px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 999px;
+  background: rgba(11, 9, 8, 0.7);
+  color: #fff;
+  font-size: 0.8rem;
+  transition: background 0.2s;
+
+  &.confirm {
+    background: #c62828;
+    font-weight: 700;
+  }
+}
+
+.more {
+  display: flex;
+  width: 100%;
+  max-width: 280px;
+  margin: 20px auto 0;
+}
+
+// ---------- moderacao ----------
+.pending {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  li {
+    display: grid;
+    gap: 8px;
+    padding: 16px;
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    background: var(--bg);
+  }
+
+  blockquote {
+    margin: 0;
+    font-family: var(--font-display);
+    font-style: italic;
+    white-space: pre-line;
+    overflow-wrap: anywhere;
+  }
+
+  cite {
+    font-style: normal;
+    font-size: 0.78rem;
+    color: var(--gold);
+  }
+
+  .none {
+    border: 0;
+    background: none;
+  }
+}
+
+.st {
+  color: var(--gold);
+  letter-spacing: 0.1em;
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+
+  .btn {
+    flex: 1;
+    min-height: 44px;
+    padding: 0 12px;
+  }
+}
+
+@media (min-width: 640px) {
+  .fields {
+    grid-template-columns: 1fr 1fr 1fr;
+
+    .wide {
+      grid-column: 1 / -1;
+    }
+  }
+
+  .thumbs {
+    grid-template-columns: repeat(4, 1fr);
+  }
+
+  .card > .btn {
+    justify-self: start;
+  }
+}
+
+@media (min-width: 900px) {
+  .where {
+    display: block;
+    padding-left: 14px;
+    border-left: 1px solid var(--line);
+    color: var(--muted);
+    font-size: 0.8rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+  }
+
+  main {
+    max-width: 960px;
+    padding-top: 48px;
+  }
+
+  .tabs {
+    max-width: 420px;
+  }
+
+  .thumbs {
+    grid-template-columns: repeat(5, 1fr);
+  }
+
+  .actions .btn {
+    flex: none;
+  }
+}

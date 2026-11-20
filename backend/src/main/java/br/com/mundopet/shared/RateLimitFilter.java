@@ -64,7 +64,8 @@ public class RateLimitFilter implements WebFilter {
                 });
     }
 
-    static String clientIp(ServerWebExchange exchange) {
+    /** IP real do cliente (o nginx sobrescreve X-Real-IP). */
+    public static String clientIp(ServerWebExchange exchange) {
         String realIp = exchange.getRequest().getHeaders().getFirst("X-Real-IP");
         if (realIp != null && !realIp.isBlank()) {
             return realIp.trim();

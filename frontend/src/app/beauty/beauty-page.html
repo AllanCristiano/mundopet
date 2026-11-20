@@ -1,0 +1,125 @@
+<header class="bar">
+  <div class="bar__inner container">
+    <a routerLink="/" class="logo" aria-label="MundoPet, página inicial">Mundo <span aria-hidden="true">✦</span> Pet</a>
+    <span class="where">Espaço Beleza</span>
+    <div class="tools">
+      <app-theme-toggle />
+    </div>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="bubbles" aria-hidden="true">
+    @for (b of bubbles; track b) {
+      <i [style.--b]="b"></i>
+    }
+  </div>
+  <div class="container">
+    <p class="kicker">Espaço Beleza · Banho &amp; Tosa</p>
+    <h1>Saem daqui <em>mais felizes</em></h1>
+    <p class="sub">Banho com produtos hipoalergênicos, tosa na tesoura, hidratação e spa. Veja quem já passou por aqui e o que os tutores contam.</p>
+    @if (hasRating()) {
+      <a class="score" href="#depoimentos">
+        <span class="big">{{ rating(summary()!.average) }}</span>
+        <span>
+          <span class="st" aria-hidden="true">{{ stars(summary()!.average) }}</span>
+          <small>{{ summary()!.count }} {{ summary()!.count === 1 ? 'depoimento' : 'depoimentos' }}</small>
+        </span>
+        <span class="sr">Nota média {{ rating(summary()!.average) }} de 5</span>
+      </a>
+    }
+    <div class="cta">
+      <a class="btn btn--gold" [href]="booking" target="_blank" rel="noopener">Agendar banho <span aria-hidden="true">→</span></a>
+      <a class="btn" href="#depoimentos">Depoimentos</a>
+    </div>
+  </div>
+</section>
+
+<section class="gallery container" aria-labelledby="gallery-title">
+  <h2 id="gallery-title" appReveal>Recém-saídos <em>do spa</em></h2>
+
+  <div class="chips" role="group" aria-label="Filtrar por serviço">
+    <button type="button" [class.on]="service() === null" [attr.aria-pressed]="service() === null" (click)="pick(null)">Todos</button>
+    @for (s of filters; track s) {
+      <button type="button" [class.on]="service() === s" [attr.aria-pressed]="service() === s" (click)="pick(s)">{{ labels[s] }}</button>
+    }
+  </div>
+
+  @if (photosError()) {
+    <p class="error" role="alert">
+      {{ photosError() }}
+      <button type="button" (click)="loadPhotos(0)">Tentar de novo</button>
+    </p>
+  } @else if (!photosLoading() && photos().length === 0) {
+    <div class="empty">
+      <span aria-hidden="true">🛁</span>
+      <p><strong>{{ service() ? 'Nenhuma foto deste serviço ainda' : 'As primeiras fotos chegam em breve' }}</strong></p>
+      <p class="muted">Cada pet que sai do nosso spa ganha um ensaio. Volte logo!</p>
+    </div>
+  }
+
+  <ul class="grid" [attr.aria-busy]="photosLoading()">
+    @for (p of photos(); track p.id; let i = $index) {
+      <li class="card" [style.--d]="delay(i) + 'ms'">
+        <button type="button" (click)="open.set(i)" [attr.aria-label]="'Ampliar foto de ' + p.petName">
+          <img [src]="p.thumbUrl" [attr.width]="p.width" [attr.height]="p.height" loading="lazy" decoding="async"
+            [alt]="'Foto de ' + p.petName + ', ' + labels[p.service]" />
+          <span class="meta">
+            <strong>{{ p.petName }}</strong>
+            <span class="tag">{{ labels[p.service] }}</span>
+          </span>
+        </button>
+      </li>
+    }
+    @if (photosLoading()) {
+      @for (s of [0, 1, 2, 3]; track s) {
+        <li class="card skeleton" aria-hidden="true"><span [style.--h]="180 + (s % 3) * 60 + 'px'"></span></li>
+      }
+    }
+  </ul>
+
+  @if (photosMore() && !photosLoading()) {
+    <button type="button" class="btn more" (click)="loadPhotos(photosPage() + 1)">Ver mais fotos</button>
+  }
+</section>
+
+<section id="depoimentos" class="voices" aria-labelledby="voices-title">
+  <div class="container">
+    <p class="kicker" appReveal>Quem conhece, volta</p>
+    <h2 id="voices-title" [appReveal]="100">O que dizem <em>os tutores</em></h2>
+
+    @if (testimonialsError()) {
+      <p class="error" role="alert">
+        {{ testimonialsError() }}
+        <button type="button" (click)="loadTestimonials(0)">Tentar de novo</button>
+      </p>
+    } @else if (!testimonialsLoading() && testimonials().length === 0) {
+      <p class="muted first">Ainda não temos depoimentos publicados. Que tal ser o primeiro?</p>
+    }
+
+    <ul class="quotes">
+      @for (t of testimonials(); track t.id; let i = $index) {
+        <li [appReveal]="(i % 9) * 80">
+          <span class="st" [attr.aria-label]="t.rating + ' de 5 estrelas'">{{ stars(t.rating) }}</span>
+          <blockquote>“{{ t.message }}”</blockquote>
+          <cite>{{ authorLine(t) }}</cite>
+        </li>
+      }
+    </ul>
+    @if (testimonialsMore() && !testimonialsLoading()) {
+      <button type="button" class="btn more" (click)="loadTestimonials(testimonialsPage() + 1)">Ver mais depoimentos</button>
+    }
+
+    <div class="write" appReveal>
+      <h3>Conte <em>como foi</em></h3>
+      <app-testimonial-form />
+    </div>
+  </div>
+</section>
+
+<footer class="end container">
+  <a routerLink="/" class="btn">← Voltar ao início</a>
+  <a routerLink="/racoes" class="btn">Loja de rações 🛒</a>
+</footer>
+
+<app-photo-lightbox [photos]="photos()" [(index)]="open" />

@@ -8,6 +8,7 @@ import org.springframework.http.ProblemDetail;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.bind.support.WebExchangeBindException;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.server.ServerWebInputException;
 
 @RestControllerAdvice
@@ -31,6 +32,12 @@ public class GlobalErrorHandler {
     @ExceptionHandler({ServerWebInputException.class, IllegalArgumentException.class})
     ProblemDetail badInput(Exception ex) {
         return ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, ex.getMessage());
+    }
+
+    /** 401/403/429 dos modulos: devolve a mensagem (em portugues) para a tela mostrar. */
+    @ExceptionHandler(ResponseStatusException.class)
+    ProblemDetail status(ResponseStatusException ex) {
+        return ProblemDetail.forStatusAndDetail(ex.getStatusCode(), ex.getReason() == null ? "" : ex.getReason());
     }
 
     @ExceptionHandler({DependencyUnavailableException.class, DataAccessResourceFailureException.class})

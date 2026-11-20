@@ -38,7 +38,7 @@ spring:
   webflux:
     multipart:
       max-disk-usage-per-part: 5MB
-      max-parts: 5
+      max-parts: 8
   codec:
     max-in-memory-size: 1MB
 
@@ -78,6 +78,9 @@ mundopet:
     brasilapi-url: ${BRASILAPI_URL:https://brasilapi.com.br/api/cep/v1}
     timeout: 3s
     cache-ttl: 30d
+  admin:
+    # Token da area da clinica (enviar fotos, aprovar depoimentos). Vazio = area desligada. Minimo 24 caracteres.
+    token: ${ADMIN_TOKEN:}
   delivery:
     # Taxa de entrega = km ate a loja x preco por km (km = linha reta x road-factor, arredondado p/ cima em 0,1)
     store-lat: ${STORE_LAT:-23.5505}

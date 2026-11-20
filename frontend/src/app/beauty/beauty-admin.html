@@ -1,0 +1,166 @@
+<header class="bar">
+  <div class="bar__inner container">
+    <a routerLink="/beleza" class="logo" aria-label="Voltar ao Espaço Beleza">Mundo <span aria-hidden="true">✦</span> Pet</a>
+    <span class="where">Área da clínica</span>
+    <div class="tools">
+      <app-theme-toggle />
+      @if (token()) {
+        <button type="button" class="out" (click)="logout()">Sair</button>
+      }
+    </div>
+  </div>
+</header>
+
+<main class="container">
+  @if (!token()) {
+    <form class="login card" (submit)="login($event)">
+      <span class="lock" aria-hidden="true">🔐</span>
+      <h1>Área da <em>clínica</em></h1>
+      <p class="muted">Para enviar fotos e aprovar depoimentos, informe o token de acesso (configurado em <code>ADMIN_TOKEN</code>).</p>
+      <label>
+        <span>Token de acesso</span>
+        <input type="password" name="token" autocomplete="current-password" [value]="tokenInput()" (input)="tokenInput.set(val($event))" />
+      </label>
+      @if (loginError()) {
+        <p class="error" role="alert">{{ loginError() }}</p>
+      }
+      <button type="submit" class="btn btn--gold" [disabled]="!tokenInput().trim() || checking()">
+        {{ checking() ? 'Conferindo…' : 'Entrar' }}
+      </button>
+    </form>
+  } @else {
+    <h1 class="title">Espaço <em>Beleza</em></h1>
+
+    <div class="tabs" role="tablist">
+      <button type="button" role="tab" [attr.aria-selected]="tab() === 'photos'" [class.on]="tab() === 'photos'" (click)="tab.set('photos')">
+        📸 Fotos <span class="n">{{ photos().length }}{{ photosMore() ? '+' : '' }}</span>
+      </button>
+      <button type="button" role="tab" [attr.aria-selected]="tab() === 'testimonials'" [class.on]="tab() === 'testimonials'" (click)="tab.set('testimonials')">
+        💬 Depoimentos
+        @if (pending().length) {
+          <span class="n alert">{{ pending().length }}</span>
+        }
+      </button>
+    </div>
+
+    @if (tab() === 'photos') {
+      <form class="card upload" (submit)="upload($event)">
+        <h2>Nova foto</h2>
+        <label class="drop" [class.has]="preview()">
+          @if (preview(); as src) {
+            <img [src]="src" alt="Pré-visualização da foto escolhida" />
+          } @else {
+            <span class="hint"><span aria-hidden="true">＋</span> Escolher foto<small>JPG, PNG, HEIC ou WebP · a foto é otimizada antes do envio</small></span>
+          }
+          <input type="file" accept="image/*" (change)="pickFile($event)" />
+        </label>
+
+        <div class="fields">
+          <label>
+            <span>Nome do pet</span>
+            <input type="text" maxlength="40" [value]="form().petName" (input)="patch({ petName: val($event) })" />
+          </label>
+          <label>
+            <span>Espécie</span>
+            <select [value]="form().species" (change)="patch({ species: $any(val($event)) })">
+              @for (s of species; track s) {
+                <option [value]="s" [selected]="form().species === s">{{ speciesLabels[s] }}</option>
+              }
+            </select>
+          </label>
+          <label>
+            <span>Serviço</span>
+            <select [value]="form().service" (change)="patch({ service: $any(val($event)) })">
+              @for (s of services; track s) {
+                <option [value]="s" [selected]="form().service === s">{{ serviceLabels[s] }}</option>
+              }
+            </select>
+          </label>
+          <label class="wide">
+            <span>Legenda <small>(opcional)</small></span>
+            <input type="text" maxlength="160" placeholder="Ex.: Tosa bebê com laço de presente 🎀" [value]="form().caption" (input)="patch({ caption: val($event) })" />
+          </label>
+        </div>
+
+        @if (uploadMsg(); as m) {
+          <p [class]="m.ok ? 'ok' : 'error'" role="status">{{ m.text }}</p>
+        }
+        <button type="submit" class="btn btn--gold" [disabled]="!canUpload()">
+          {{ uploading() ? 'Enviando…' : 'Publicar foto' }}
+        </button>
+        <p class="muted small">A foto é publicada na hora em <a routerLink="/beleza">/beleza</a>. Peça autorização ao tutor antes de publicar.</p>
+      </form>
+
+      <ul class="thumbs">
+        @for (p of photos(); track p.id) {
+          <li>
+            <img [src]="p.thumbUrl" [alt]="'Foto de ' + p.petName" loading="lazy" />
+            <span class="cap"><strong>{{ p.petName }}</strong> · {{ serviceLabels[p.service] }}</span>
+            <button type="button" class="del" [class.confirm]="confirmDelete() === p.id" (click)="remove(p)"
+              [attr.aria-label]="(confirmDelete() === p.id ? 'Confirmar exclusão da foto de ' : 'Excluir foto de ') + p.petName">
+              {{ confirmDelete() === p.id ? 'Confirmar?' : '🗑' }}
+            </button>
+          </li>
+        } @empty {
+          <li class="none muted">Nenhuma foto publicada ainda.</li>
+        }
+      </ul>
+      @if (photosMore()) {
+        <button type="button" class="btn more" (click)="morePhotos()">Carregar mais</button>
+      }
+    } @else {
+      <section class="card">
+        <h2>Aguardando aprovação</h2>
+        @if (modError()) {
+          <p class="error" role="alert">{{ modError() }}</p>
+        }
+        <ul class="pending">
+          @for (t of pending(); track t.id) {
+            <li>
+              <span class="st" [attr.aria-label]="t.rating + ' de 5 estrelas'">{{ stars(t.rating) }}</span>
+              <blockquote>“{{ t.message }}”</blockquote>
+              <cite>{{ authorLine(t) }}</cite>
+              <div class="actions">
+                <button type="button" class="btn btn--gold" (click)="approve(t)">Aprovar</button>
+                <button type="button" class="btn" (click)="reject(t)">Excluir</button>
+              </div>
+            </li>
+          } @empty {
+            <li class="none muted">Nenhum depoimento esperando. 🎉</li>
+          }
+        </ul>
+      </section>
+
+      <form class="card manual" (submit)="addManual($event)">
+        <h2>Cadastrar depoimento</h2>
+        <p class="muted small">Recebeu um elogio no WhatsApp ou no balcão? Publique aqui (já entra aprovado).</p>
+        <div class="fields">
+          <label>
+            <span>Nome do tutor</span>
+            <input type="text" maxlength="60" [value]="manual().author" (input)="patchManual({ author: val($event) })" />
+          </label>
+          <label>
+            <span>Nome do pet <small>(opcional)</small></span>
+            <input type="text" maxlength="40" [value]="manual().petName" (input)="patchManual({ petName: val($event) })" />
+          </label>
+          <label>
+            <span>Nota</span>
+            <select (change)="patchManual({ rating: +val($event) })">
+              @for (n of [5, 4, 3, 2, 1]; track n) {
+                <option [value]="n" [selected]="manual().rating === n">{{ stars(n) }}</option>
+              }
+            </select>
+          </label>
+          <label class="wide">
+            <span>Depoimento</span>
+            <textarea rows="3" maxlength="600" [value]="manual().message" (input)="patchManual({ message: val($event) })"></textarea>
+          </label>
+        </div>
+        @if (manualMsg()) {
+          <p class="ok" role="status">{{ manualMsg() }}</p>
+        }
+        <button type="submit" class="btn btn--gold" [disabled]="!manualOk()">Publicar depoimento</button>
+      </form>
+    }
+  }
+</main>

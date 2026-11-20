@@ -104,7 +104,11 @@ Estas regras são **obrigatórias**. Um PR que viole qualquer item marcado com *
 
 6.3 `/actuator/*` não é exposto pelo nginx (só `/health`).
 
-6.4 O APK de desenvolvimento permite HTTP (`usesCleartextTraffic`). **Release para loja exige HTTPS** e remoção desse atributo.
+6.4 **[BLOQUEANTE]** Rotas administrativas (`/api/**/admin/**`) passam pelo `AdminGuard` (token `ADMIN_TOKEN`, ≥ 24 caracteres, comparação em tempo constante) **antes** de ler o corpo da requisição. Sem token configurado, a área fica desligada.
+
+6.5 **[BLOQUEANTE]** Imagem enviada por usuário nunca é guardada como veio: conferir a assinatura do arquivo (não o content-type), recusar resolução absurda antes de decodificar e **re-codificar** (remove EXIF/GPS). O navegador nunca acessa o MinIO direto; a API serve os arquivos.
+
+6.6 O APK de desenvolvimento permite HTTP (`usesCleartextTraffic`). **Release para loja exige HTTPS** e remoção desse atributo.
 
 ## 7. Fluxo de trabalho
 

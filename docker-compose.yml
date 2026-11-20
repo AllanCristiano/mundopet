@@ -23,6 +23,8 @@ x-api-env: &api-env
   MINIO_BUCKET: ${MINIO_BUCKET:-mundopet}
   RATE_LIMIT_REQUESTS: ${RATE_LIMIT_REQUESTS:-50}
   QUEUE_CONCURRENCY: ${QUEUE_CONCURRENCY:-16}
+  # Area da clinica (/beleza/admin). Vazio = desligada. Gere com: openssl rand -hex 24
+  ADMIN_TOKEN: ${ADMIN_TOKEN:-}
   # Taxa de entrega por distancia (coordenadas da loja + preco por km)
   STORE_LAT: ${STORE_LAT:--23.5505}
   STORE_LNG: ${STORE_LNG:--46.6333}

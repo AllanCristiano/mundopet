@@ -1,0 +1,197 @@
+:host {
+  display: block;
+}
+
+form {
+  display: grid;
+  gap: 16px;
+}
+
+.row {
+  display: grid;
+  gap: 16px;
+}
+
+label {
+  display: grid;
+  gap: 6px;
+  font-size: 0.85rem;
+
+  small {
+    color: var(--muted);
+  }
+}
+
+input,
+textarea {
+  width: 100%;
+  min-height: 48px;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--bg);
+  color: var(--ink);
+  font: inherit;
+  resize: vertical;
+  transition: border-color 0.25s;
+
+  &:focus {
+    border-color: var(--beauty);
+    outline: none;
+  }
+}
+
+.count {
+  justify-self: end;
+  font-size: 0.72rem;
+
+  &.ok {
+    color: var(--vet);
+  }
+}
+
+.stars {
+  display: flex;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+
+  legend {
+    margin-bottom: 6px;
+    font-size: 0.85rem;
+  }
+
+  label {
+    display: grid;
+    place-items: center;
+    width: 48px;
+    height: 48px;
+    font-size: 1.9rem;
+    color: var(--line);
+    cursor: pointer;
+    transition:
+      transform 0.25s var(--ease-out),
+      color 0.25s;
+
+    &.on {
+      color: var(--gold);
+    }
+
+    &:hover {
+      transform: scale(1.15) rotate(-6deg);
+    }
+
+    &:has(input:focus-visible) {
+      outline: 2px solid var(--gold);
+      outline-offset: 2px;
+      border-radius: 10px;
+    }
+  }
+
+  input {
+    position: absolute;
+    opacity: 0;
+    width: 1px;
+    height: 1px;
+    min-height: 0;
+  }
+}
+
+.sr,
+.hp {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.hp {
+  left: -9999px;
+}
+
+.btn {
+  width: 100%;
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.error {
+  margin: 0;
+  color: #ff8a80;
+  font-size: 0.85rem;
+}
+
+:host-context([data-theme='light']) .error {
+  color: #b3261e;
+}
+
+.note {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.75rem;
+}
+
+.done {
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+  padding: 24px 0;
+  text-align: center;
+  animation: pop 0.5s var(--ease-out);
+
+  p {
+    margin: 0;
+  }
+
+  .muted {
+    max-width: 34ch;
+    margin-bottom: 16px;
+    color: var(--muted);
+  }
+}
+
+.paw {
+  font-size: 2.6rem;
+  animation: wiggle 1.2s ease-in-out 2;
+}
+
+@media (min-width: 640px) {
+  .row {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .btn {
+    width: auto;
+    justify-self: start;
+  }
+}
+
+@keyframes pop {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+}
+
+@keyframes wiggle {
+  25% {
+    transform: rotate(-12deg);
+  }
+
+  75% {
+    transform: rotate(12deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .done,
+  .paw {
+    animation: none;
+  }
+}

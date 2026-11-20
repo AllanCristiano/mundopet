@@ -63,7 +63,7 @@ describe('LandingFooter', () => {
     const el = render();
     expect(el.querySelector('.logo')).not.toBeNull();
     const services = Array.from(el.querySelectorAll('nav.col a')).map((a) => a.getAttribute('href'));
-    expect(services).toEqual(['#hotel', '#racoes', '#beleza', '#veterinario', '/racoes']);
+    expect(services).toEqual(['#hotel', '#racoes', '#beleza', '#veterinario', '/racoes', '/beleza']);
     expect(el.querySelector('a.shop')!.textContent).toContain('Loja');
     expect(el.textContent).toContain(STORE.clinicHours);
     expect(el.querySelector('app-landing-map')).not.toBeNull();
