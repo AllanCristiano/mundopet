@@ -3,7 +3,10 @@ import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { provideRouter } from '@angular/router';
 import { TestBed } from '@angular/core/testing';
 
-import { ANATOMY_LAYERS, CHAPTERS, NAV_LINKS, STATS, TESTIMONIALS, WHATSAPP_URL } from './landing.data';
+import { HttpTestingController } from '@angular/common/http/testing';
+
+import { ANATOMY_LAYERS, CHAPTERS, NAV_LINKS, STATS } from './landing.data';
+import { SiteConfigService } from '../core/site-config';
 import { LandingPage } from './landing-page';
 import { APK_URL, AppDownloadService } from '../core/app-download.service';
 import { LandingApp } from './sections/landing-app';
@@ -45,18 +48,67 @@ describe('LandingPage', () => {
     expect(el.querySelectorAll('.label').length).toBe(ANATOMY_LAYERS.length);
   });
 
-  it('numeros e depoimentos (copia do carrossel oculta para leitor de tela)', () => {
-    const { el } = render();
-    expect(el.querySelectorAll('dd').length).toBe(STATS.length);
+  /** Responde as chamadas de depoimentos (secao de numeros e vitrine da beleza). */
+  function flushTestimonials(items: object[], average = 4.6) {
+    const http = TestBed.inject(HttpTestingController);
+    http.match((r) => r.url === '/api/beauty/testimonials')
+      .forEach((r) => r.flush({ items, page: 0, size: 10, hasMore: false, summary: { average, count: items.length } }));
+    http.match((r) => r.url === '/api/beauty/photos').forEach((r) => r.flush({ items: [], page: 0, size: 10, hasMore: false }));
+  }
+
+  const review = (i: number) => ({ id: 't' + i, author: 'Tutor ' + i, petName: 'Pet ' + i, rating: 5, message: 'Adoramos! ' + i,
+    status: 'APPROVED', createdAt: '2026-11-20T10:00:00Z' });
+
+  it('depoimentos REAIS aprovados no carrossel (copia oculta) e nota media real nos numeros', () => {
+    const { fixture, el } = render();
+    flushTestimonials([review(1), review(2), review(3)], 4.6);
+    fixture.detectChanges();
+    expect(el.querySelectorAll('.proof dd').length).toBe(STATS.length);
     const items = el.querySelectorAll('.reviews li');
-    expect(items.length).toBe(TESTIMONIALS.length * 2);
-    expect(items[TESTIMONIALS.length].getAttribute('aria-hidden')).toBe('true');
+    expect(items.length).toBe(6);
+    expect(items[3].getAttribute('aria-hidden')).toBe('true');
     expect(items[0].getAttribute('aria-hidden')).toBeNull();
+    expect(items[0].textContent).toContain('Adoramos! 1');
+    expect(items[0].querySelector('cite')!.textContent).toContain('Tutor 1 · com Pet 1');
+    expect(el.querySelector('.proof .more a')!.getAttribute('href')).toBe('/beleza#depoimentos');
+    // a nota da secao vira a media real (o contador recria com o valor novo)
+    const proof = fixture.debugElement.query((d) => d.name === 'app-landing-proof').componentInstance;
+    expect(proof.stats().find((s: { source: string }) => s.source === 'RATING').value).toBe(4.6);
+  });
+
+  it('sem depoimentos aprovados: convite para avaliar e nota digitada pelo dono', () => {
+    const { fixture, el } = render();
+    flushTestimonials([]);
+    fixture.detectChanges();
+    expect(el.querySelector('.reviews')).toBeNull();
+    expect(el.querySelector('.invite a')!.getAttribute('href')).toBe('/beleza#depoimentos');
+    const proof = fixture.debugElement.query((d) => d.name === 'app-landing-proof').componentInstance;
+    expect(proof.stats().find((s: { source: string }) => s.source === 'RATING').value).toBe(4.9);
+  });
+
+  it('textos, servicos e WhatsApp vem da gestao do site', () => {
+    const site = TestBed.inject(SiteConfigService);
+    const s = structuredClone(site.settings());
+    s.hero = { kicker: 'Desde 2010', title: 'Seu pet em boas', highlight: 'mãos', subtitle: 'Sub novo' };
+    s.store.whatsapp = '5511912345678';
+    s.announcement = { enabled: true, text: 'Fechado no feriado' };
+    s.chapters = s.chapters.map((c) => (c.id === 'hotel' ? { ...c, enabled: false } : c));
+    s.cta = { kicker: 'K', title: 'Bora', highlight: 'lá', text: 'T' };
+    site.apply({ version: 3, settings: s, updatedAt: null });
+    const { el } = render();
+    expect(el.querySelector('h1')!.textContent!.replace(/\s+/g, ' ')).toContain('Seu pet em boas');
+    expect(el.querySelector('h1 em')!.textContent).toContain('mãos');
+    expect(el.querySelector('.hero .notice')!.textContent).toContain('Fechado no feriado');
+    expect(el.querySelector('#hotel')).toBeNull();
+    expect(el.querySelector('.chapter .bignum')!.textContent).toBe('01');
+    expect(Array.from(el.querySelectorAll('.nav .links a')).map((a) => a.getAttribute('href'))).not.toContain('#hotel');
+    expect(el.querySelector('#cta-title')!.textContent).toContain('Bora');
+    expect(el.querySelector<HTMLAnchorElement>('.hero .btn--gold')!.href).toContain('wa.me/5511912345678');
   });
 
   it('CTAs externos abrem em nova aba com rel=noopener', () => {
     const { el } = render();
-    const ctas = el.querySelectorAll<HTMLAnchorElement>(`a[href="${WHATSAPP_URL}"]`);
+    const ctas = el.querySelectorAll<HTMLAnchorElement>(`a[href="${TestBed.inject(SiteConfigService).whatsappUrl()}"]`);
     expect(ctas.length).toBeGreaterThan(3);
     ctas.forEach((a) => expect(a.rel).toContain('noopener'));
   });

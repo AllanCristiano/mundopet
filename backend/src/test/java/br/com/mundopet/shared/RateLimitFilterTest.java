@@ -20,7 +20,7 @@ import org.springframework.web.server.WebFilterChain;
 
 import reactor.core.publisher.Mono;
 
-/** Testes de falha do rate limit: Redis fora do ar nao pode derrubar a API (fail-open). */
+/** Testes de falha do rate limit: Redis fora do ar nao derruba a API e o ataque continua barrado (limite local). */
 class RateLimitFilterTest {
 
     private ReactiveStringRedisTemplate redis;
@@ -65,6 +65,20 @@ class RateLimitFilterTest {
     }
 
     @Test
+    void localCounterBlocksEvenIfRedisCountIsLow() {
+        // ex.: Redis respondeu lento para parte da rajada e contou menos do que chegou nesta replica
+        when(ops.increment(anyString())).thenReturn(Mono.just(1L));
+        for (int i = 0; i < 2; i++) {
+            filter.filter(exchange("/api/pets"), chain).block();
+        }
+        passed.set(false);
+        var ex = exchange("/api/pets");
+        filter.filter(ex, chain).block();
+        assertThat(passed).isFalse();
+        assertThat(ex.getResponse().getStatusCode()).isEqualTo(HttpStatus.TOO_MANY_REQUESTS);
+    }
+
+    @Test
     void failsOpenWhenRedisIsDown() {
         when(ops.increment(anyString())).thenReturn(Mono.error(new RedisConnectionFailureException("down")));
         filter.filter(exchange("/api/pets"), chain).block();
@@ -76,6 +90,37 @@ class RateLimitFilterTest {
         when(ops.increment(anyString())).thenReturn(Mono.never());
         filter.filter(exchange("/api/pets"), chain).block();
         assertThat(passed).isTrue();
+    }
+
+    @Test
+    void redisDownStillBlocksAttackWithLocalLimit() {
+        when(ops.increment(anyString())).thenReturn(Mono.error(new RedisConnectionFailureException("down")));
+        int ok = 0;
+        int blocked = 0;
+        for (int i = 0; i < 10; i++) {
+            passed.set(false);
+            var ex = exchange("/api/pets");
+            filter.filter(ex, chain).block();
+            if (passed.get()) ok++;
+            if (ex.getResponse().getStatusCode() == HttpStatus.TOO_MANY_REQUESTS) blocked++;
+        }
+        // limite 2 por janela de 1s (pode virar a janela no meio do laco: no maximo 4)
+        assertThat(ok).isBetween(2, 4);
+        assertThat(blocked).isEqualTo(10 - ok);
+    }
+
+    @Test
+    void localCountersForgetOldWindowsAndAreBounded() {
+        filter.localIncrement("rl:a:1", 1);
+        filter.localIncrement("rl:b:1", 1);
+        assertThat(filter.localIncrement("rl:a:1", 1)).isEqualTo(2);
+        filter.localIncrement("rl:a:2", 2); // nova janela: descarta as antigas
+        assertThat(filter.localSize()).isEqualTo(1);
+        for (int i = 0; i <= RateLimitFilter.LOCAL_MAX_KEYS; i++) {
+            filter.localIncrement("rl:ip" + i + ":2", 2);
+        }
+        assertThat(filter.localSize()).isLessThanOrEqualTo(RateLimitFilter.LOCAL_MAX_KEYS);
+        assertThat(filter.localIncrement("rl:x:2", 2)).isEqualTo(1);
     }
 
     @Test

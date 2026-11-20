@@ -9,6 +9,7 @@ export const routes: Routes = [
     loadComponent: () => import('./beauty/beauty-admin').then((m) => m.BeautyAdmin),
     title: 'MundoPet · Área da clínica',
   },
+  { path: 'gestao', loadComponent: () => import('./admin/site-admin').then((m) => m.SiteAdmin), title: 'MundoPet · Gestão do site' },
   { path: 'pets', loadComponent: () => import('./pets/pets-page').then((m) => m.PetsPage), title: 'MundoPet · Pets' },
   { path: '**', redirectTo: '' },
 ];

@@ -2,7 +2,7 @@ import { RouterLink } from '@angular/router';
 import { Component, ElementRef, NgZone, OnDestroy, OnInit, inject, signal } from '@angular/core';
 
 import { ThemeToggle } from '../../core/theme-toggle';
-import { NAV_LINKS, WHATSAPP_URL } from '../landing.data';
+import { SiteConfigService } from '../../core/site-config';
 
 @Component({
   selector: 'app-landing-nav',
@@ -12,8 +12,9 @@ import { NAV_LINKS, WHATSAPP_URL } from '../landing.data';
   host: { '[class.menu-open]': 'open()' },
 })
 export class LandingNav implements OnInit, OnDestroy {
-  readonly links = NAV_LINKS;
-  readonly whatsapp = WHATSAPP_URL;
+  private readonly site = inject(SiteConfigService);
+  readonly links = this.site.navLinks;
+  readonly whatsapp = this.site.whatsappUrl;
   readonly open = signal(false);
 
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);

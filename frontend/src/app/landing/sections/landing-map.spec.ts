@@ -1,6 +1,9 @@
 import { provideRouter } from '@angular/router';
 import { TestBed } from '@angular/core/testing';
 
+import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
+
 import { STORE } from '../landing.data';
 import { LandingFooter } from './landing-footer';
 import { LandingMap, directionsUrls, googleEmbedUrl, mapsQuery } from './landing-map';
@@ -51,7 +54,7 @@ describe('LandingMap (Google Maps)', () => {
 });
 
 describe('LandingFooter', () => {
-  beforeEach(() => TestBed.configureTestingModule({ providers: [provideRouter([])] }));
+  beforeEach(() => TestBed.configureTestingModule({ providers: [provideRouter([]), provideHttpClient(), provideHttpClientTesting()] }));
 
   function render() {
     const fixture = TestBed.createComponent(LandingFooter);

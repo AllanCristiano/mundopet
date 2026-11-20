@@ -303,7 +303,7 @@ describe('Espaco Beleza', () => {
       f.detectChanges();
       el.querySelector<HTMLFormElement>('form.login')!.dispatchEvent(new Event('submit'));
       f.detectChanges();
-      return http.expectOne(`${BEAUTY_API}/admin/check`);
+      return http.expectOne('/api/site/admin/check');
     }
 
     function flushInitial(photos: BeautyPhoto[] = [], pending: Testimonial[] = []) {
@@ -392,7 +392,7 @@ describe('Espaco Beleza', () => {
       c.file.set(new File(['x'], 'a.txt', { type: 'text/plain' }));
       c.patch({ petName: 'Rex' });
       c.upload(new Event('submit'));
-      await new Promise((r) => setTimeout(r, 50));
+      await new Promise((r) => setTimeout(r, 400)); // redimensionamento no navegador e assincrono
       http.expectOne(`${BEAUTY_API}/admin/photos`).flush({ detail: 'Formato não suportado' }, { status: 400, statusText: 'x' });
       f.detectChanges();
       expect(el.querySelector('form.upload .error')!.textContent).toContain('Formato não suportado');

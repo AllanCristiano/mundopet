@@ -1,16 +1,8 @@
-// Conteudo da landing page. Edite aqui sem mexer nos componentes.
-// TODO(negocio): substituir telefone, numeros e depoimentos pelos dados REAIS da loja antes de publicar.
+// Textos PADRAO do site. O dono troca tudo isso pela pagina de gestao (/gestao); estes valores so aparecem
+// enquanto ele nao salvar (ou se a API estiver fora do ar). Ver core/site-config.ts.
 
 export type ArtKind = 'dog' | 'cat' | 'house' | 'bowl' | 'scissors' | 'heart';
 export type Scene = 'hotel' | 'food' | 'beauty' | 'vet';
-
-/** Numero do WhatsApp da loja com DDI+DDD, so digitos. TODO(negocio): numero real. */
-export const WHATSAPP_PHONE = '5500000000000';
-export const WHATSAPP_URL = `https://wa.me/${WHATSAPP_PHONE}?text=Ol%C3%A1!%20Quero%20conhecer%20o%20MundoPet`;
-
-export function whatsappLink(text: string): string {
-  return `https://wa.me/${WHATSAPP_PHONE}?text=${encodeURIComponent(text)}`;
-}
 
 export const NAV_LINKS = [
   { label: 'Hotel', href: '#hotel' },
@@ -123,12 +115,4 @@ export const STATS = [
   { value: 12, prefix: '', suffix: ' anos', decimals: 0, label: 'de experiência' },
   { value: 4.9, prefix: '', suffix: '★', decimals: 1, label: 'avaliação média' },
   { value: 24, prefix: '', suffix: 'h', decimals: 0, label: 'de plantão veterinário' },
-];
-
-/** Depoimentos de EXEMPLO (placeholder) - trocar por avaliacoes reais com autorizacao dos clientes. */
-export const TESTIMONIALS = [
-  { quote: 'Viajei tranquila vendo a Luna brincar pela câmera. Voltou mais feliz do que foi!', author: 'Cliente exemplo · tutora da Luna' },
-  { quote: 'O banho com aromaterapia deixou o Thor cheiroso por dias. Atendimento impecável.', author: 'Cliente exemplo · tutor do Thor' },
-  { quote: 'Fomos atendidos de madrugada numa emergência. Salvaram o nosso Bob.', author: 'Cliente exemplo · família do Bob' },
-  { quote: 'A ração chega no mesmo dia e a consultoria acertou a dieta da Mel.', author: 'Cliente exemplo · tutora da Mel' },
 ];

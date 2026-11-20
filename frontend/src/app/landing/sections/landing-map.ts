@@ -3,7 +3,17 @@ import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 
 import { STORE } from '../landing.data';
 
-export type Store = typeof STORE;
+export interface Store {
+  name: string;
+  street: string;
+  district: string;
+  city: string;
+  state: string;
+  zip: string;
+  lat: number;
+  lng: number;
+  mapsQuery: string;
+}
 
 /** Texto buscado no Google Maps: nome/endereco cadastrado ou, sem isso, as coordenadas. */
 export function mapsQuery(store: Store): string {
@@ -36,7 +46,7 @@ export class LandingMap {
   private readonly sanitizer = inject(DomSanitizer);
   readonly store = input<Store>(STORE);
   readonly links = computed(() => directionsUrls(this.store()));
-  /** URL montada so a partir das constantes da loja (nunca de entrada do usuario), por isso pode ser confiavel. */
+  /** Host fixo do Google e busca passada por encodeURIComponent (o texto nunca entra cru): pode ser confiavel. */
   readonly embedUrl = computed<SafeResourceUrl>(() =>
     this.sanitizer.bypassSecurityTrustResourceUrl(googleEmbedUrl(this.store())),
   );

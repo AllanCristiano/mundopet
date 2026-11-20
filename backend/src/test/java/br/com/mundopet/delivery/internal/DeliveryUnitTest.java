@@ -27,6 +27,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 
 import br.com.mundopet.delivery.DeliveryQuote;
 import br.com.mundopet.delivery.DeliveryQuote.Status;
+import br.com.mundopet.site.SiteSettingsApi;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 import reactor.core.publisher.Mono;
@@ -86,9 +87,15 @@ class DeliveryUnitTest {
     // ---------------- Calculo da taxa ----------------
 
     private final GeoCache cache = mock(GeoCache.class);
+    private final SiteSettingsApi site = mock(SiteSettingsApi.class);
+
+    private DistanceDeliveryCalculator calc(DeliveryProperties p, List<Geocoder> geocoders) {
+        return new DistanceDeliveryCalculator(p, cache, geocoders, site);
+    }
 
     @BeforeEach
     void cacheMiss() {
+        when(site.delivery()).thenReturn(Mono.empty());
         when(cache.get(anyString())).thenReturn(Mono.empty());
         when(cache.put(anyString(), any())).thenAnswer(inv -> Mono.just(inv.getArgument(1)));
     }
@@ -102,7 +109,7 @@ class DeliveryUnitTest {
 
     @Test
     void feeIsKmRoundedUpTimesPricePerKm() {
-        var calc = new DistanceDeliveryCalculator(PROPS, cache, List.of());
+        var calc = calc(PROPS, List.of());
         // 1,112 km -> arredonda para cima: 1,2 km x R$ 2,00 = R$ 2,40
         DeliveryQuote q = calc.priced(new GeoPoint(-23.5605, -46.6333));
         assertThat(q.status()).isEqualTo(Status.OK);
@@ -112,7 +119,7 @@ class DeliveryUnitTest {
         assertThat(q.deliverable()).isTrue();
 
         // o fator de ruas aumenta a distancia: 1,112 x 1,3 = 1,446 -> 1,5 km = R$ 3,00
-        var withRoads = new DistanceDeliveryCalculator(props(1.3), cache, List.of());
+        var withRoads = calc(props(1.3), List.of());
         assertThat(withRoads.priced(new GeoPoint(-23.5605, -46.6333)).fee()).isEqualByComparingTo("3.00");
 
         // na porta da loja: 0 km = R$ 0,00
@@ -121,7 +128,7 @@ class DeliveryUnitTest {
 
     @Test
     void beyondMaxRadiusIsOutOfArea() {
-        var calc = new DistanceDeliveryCalculator(PROPS, cache, List.of());
+        var calc = calc(PROPS, List.of());
         DeliveryQuote q = calc.priced(new GeoPoint(-22.9035, -43.2096)); // Rio
         assertThat(q.status()).isEqualTo(Status.OUT_OF_AREA);
         assertThat(q.fee()).isNull();
@@ -134,7 +141,7 @@ class DeliveryUnitTest {
         AtomicInteger a = new AtomicInteger();
         AtomicInteger b = new AtomicInteger();
         GeoPoint point = new GeoPoint(-23.5605, -46.6333);
-        var calc = new DistanceDeliveryCalculator(PROPS, cache, List.of(
+        var calc = calc(PROPS, List.of(
                 geocoder("A", Mono.empty(), a), geocoder("B", Mono.just(point), b)));
 
         StepVerifier.create(calc.quote("01001-000"))
@@ -148,7 +155,7 @@ class DeliveryUnitTest {
     @Test
     void geocoderDownFallsBackToNext() {
         AtomicInteger calls = new AtomicInteger();
-        var calc = new DistanceDeliveryCalculator(PROPS, cache, List.of(
+        var calc = calc(PROPS, List.of(
                 geocoder("A", Mono.error(new IllegalStateException("fora do ar")), calls),
                 geocoder("B", Mono.just(new GeoPoint(-23.5605, -46.6333)), calls)));
         StepVerifier.create(calc.quote("01001000"))
@@ -161,7 +168,7 @@ class DeliveryUnitTest {
     void cacheHitSkipsGeocoders() {
         when(cache.get("01001000")).thenReturn(Mono.just(new GeoPoint(-23.5605, -46.6333)));
         AtomicInteger calls = new AtomicInteger();
-        var calc = new DistanceDeliveryCalculator(PROPS, cache, List.of(geocoder("A", Mono.empty(), calls)));
+        var calc = calc(PROPS, List.of(geocoder("A", Mono.empty(), calls)));
         StepVerifier.create(calc.quote("01001000"))
                 .assertNext(q -> assertThat(q.status()).isEqualTo(Status.OK))
                 .verifyComplete();
@@ -171,7 +178,7 @@ class DeliveryUnitTest {
     @Test
     void nobodyKnowsOrEverybodyIsDownMeansUnknownNeverAnError() {
         AtomicInteger calls = new AtomicInteger();
-        var calc = new DistanceDeliveryCalculator(PROPS, cache, List.of(
+        var calc = calc(PROPS, List.of(
                 geocoder("A", Mono.error(new IllegalStateException("x")), calls), geocoder("B", Mono.empty(), calls)));
         StepVerifier.create(calc.quote("01001000")).assertNext(q -> {
             assertThat(q.status()).isEqualTo(Status.UNKNOWN);
@@ -185,11 +192,30 @@ class DeliveryUnitTest {
     @Test
     void invalidCepIsUnknownWithoutCallingAnything() {
         AtomicInteger calls = new AtomicInteger();
-        var calc = new DistanceDeliveryCalculator(PROPS, cache, List.of(geocoder("A", Mono.empty(), calls)));
+        var calc = calc(PROPS, List.of(geocoder("A", Mono.empty(), calls)));
         StepVerifier.create(calc.quote("123")).assertNext(q -> assertThat(q.status()).isEqualTo(Status.UNKNOWN)).verifyComplete();
         StepVerifier.create(calc.quote(null)).assertNext(q -> assertThat(q.status()).isEqualTo(Status.UNKNOWN)).verifyComplete();
         assertThat(calls).hasValue(0);
         verify(cache, never()).get(anyString());
+    }
+
+    @Test
+    void ownerSettingsFromTheManagementPageWinOverEnvironment() {
+        // dono mudou a loja de lugar e cobra R$ 3,00/km com raio de 1 km
+        when(site.delivery()).thenReturn(Mono.just(new SiteSettingsApi.StoreDelivery(-23.5605, -46.6333,
+                new BigDecimal("3.00"), new BigDecimal("1"))));
+        AtomicInteger calls = new AtomicInteger();
+        var calc = calc(PROPS, List.of(geocoder("A", Mono.just(new GeoPoint(-23.5505, -46.6333)), calls)));
+        StepVerifier.create(calc.quote("01001000")).assertNext(q -> {
+            assertThat(q.status()).isEqualTo(Status.OUT_OF_AREA); // 1,2 km > 1 km
+            assertThat(q.pricePerKm()).isEqualByComparingTo("3.00");
+        }).verifyComplete();
+        StepVerifier.create(calc.quote("1")).assertNext(q -> assertThat(q.maxKm()).isEqualByComparingTo("1")).verifyComplete();
+
+        // configuracao indisponivel: volta para o ambiente
+        when(site.delivery()).thenReturn(Mono.error(new IllegalStateException("db down")));
+        StepVerifier.create(calc.quote("01001000"))
+                .assertNext(q -> assertThat(q.pricePerKm()).isEqualByComparingTo("2.00")).verifyComplete();
     }
 
     // ---------------- Cache: falha aberta ----------------

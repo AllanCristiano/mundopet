@@ -5,7 +5,7 @@
     </a>
 
     <nav class="links" aria-label="Serviços">
-      @for (link of links; track link.href) {
+      @for (link of links(); track link.href) {
         @if (link.href.startsWith('/')) {
           <a [routerLink]="link.href" class="store">{{ link.label }}</a>
         } @else {
@@ -16,7 +16,7 @@
 
     <div class="tools">
       <app-theme-toggle />
-      <a class="btn cta-desktop" [href]="whatsapp" target="_blank" rel="noopener">Agendar visita</a>
+      <a class="btn cta-desktop" [href]="whatsapp()" target="_blank" rel="noopener">Agendar visita</a>
     </div>
 
     <button
@@ -34,7 +34,7 @@
 
 <div id="menu-mobile" class="menu" [attr.aria-hidden]="!open()" [attr.inert]="open() ? null : ''">
   <nav aria-label="Menu">
-    @for (link of links; track link.href; let i = $index) {
+    @for (link of links(); track link.href; let i = $index) {
       @if (link.href.startsWith('/')) {
         <a [routerLink]="link.href" [style.--i]="i" (click)="close()">
           <small>0{{ i + 1 }}</small>{{ link.label }} 🛒
@@ -46,7 +46,7 @@
       }
     }
   </nav>
-  <a class="btn btn--gold" [href]="whatsapp" target="_blank" rel="noopener" (click)="close()">Agendar visita</a>
+  <a class="btn btn--gold" [href]="whatsapp()" target="_blank" rel="noopener" (click)="close()">Agendar visita</a>
 </div>
 
-<a class="bar btn btn--gold" [href]="whatsapp" target="_blank" rel="noopener">Agendar visita</a>
+<a class="bar btn btn--gold" [href]="whatsapp()" target="_blank" rel="noopener">Agendar visita</a>

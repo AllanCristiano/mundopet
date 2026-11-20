@@ -1,0 +1,36 @@
+{
+  "store": {
+    "name": "MundoPet",
+    "about": "Hotel, rações, banho & tosa e clínica 24h.",
+    "whatsapp": "5511999998888",
+    "whatsappMessage": "Olá! Quero conhecer o MundoPet",
+    "instagram": "https://www.instagram.com/mundopet",
+    "facebook": "",
+    "email": "contato@mundopet.example"
+  },
+  "address": {
+    "street": "  Rua das Flores, 100 ",
+    "district": "Centro",
+    "city": "São Paulo",
+    "state": "sp",
+    "zip": "01001-000",
+    "lat": -23.5605,
+    "lng": -46.6333,
+    "mapsQuery": ""
+  },
+  "hours": { "store": "Seg a Sáb · 8h às 20h", "clinic": "Clínica: 24 horas" },
+  "announcement": { "enabled": true, "text": "Fechado no feriado de 25/12" },
+  "hero": { "kicker": "Pet shop · Hotel", "title": "Tudo o que o seu melhor amigo", "highlight": "merece", "subtitle": "Tudo em um lugar." },
+  "cta": { "kicker": "Portas abertas", "title": "Venha nos", "highlight": "conhecer", "text": "Traga seu pet." },
+  "chapters": [
+    { "id": "hotel", "enabled": true, "kicker": "Hotel", "title": "Férias para ele,", "highlight": "paz para você", "text": "Suítes.", "features": ["Suítes"], "cta": "Reservar" },
+    { "id": "racoes", "enabled": true, "kicker": "Rações", "title": "Nutrição que vira", "highlight": "energia", "text": "Rações.", "features": [], "cta": "Ver catálogo" },
+    { "id": "beleza", "enabled": true, "kicker": "Banho & Tosa", "title": "Saia do spa", "highlight": "irresistível", "text": "Banho.", "features": ["Tosa"], "cta": "Agendar banho" },
+    { "id": "veterinario", "enabled": false, "kicker": "Clínica", "title": "Cuidado de quem", "highlight": "entende", "text": "24h.", "features": [], "cta": "Marcar consulta" }
+  ],
+  "stats": [
+    { "label": "pets atendidos", "value": 15000, "prefix": "+", "suffix": "", "decimals": 0, "source": "MANUAL" },
+    { "label": "avaliação média", "value": 4.9, "prefix": "", "suffix": "★", "decimals": 1, "source": "RATING" }
+  ],
+  "delivery": { "pricePerKm": 3.50, "maxKm": 10 }
+}

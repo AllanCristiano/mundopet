@@ -2,7 +2,7 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
 import { ThemeToggle } from '../core/theme-toggle';
-import { whatsappLink } from '../landing/landing.data';
+import { SiteConfigService } from '../core/site-config';
 import { RevealDirective } from '../landing/motion/reveal.directive';
 import { BeautyApi } from './beauty.api';
 import {
@@ -31,6 +31,7 @@ export const TESTIMONIALS_PAGE = 9;
 })
 export class BeautyPage {
   private readonly api = inject(BeautyApi);
+  private readonly site = inject(SiteConfigService);
 
   readonly filters = SERVICE_FILTERS;
   readonly labels = SERVICE_LABELS;
@@ -38,7 +39,7 @@ export class BeautyPage {
   readonly rating = rating;
   readonly authorLine = authorLine;
   readonly bubbles = Array.from({ length: 10 }, (_, i) => i);
-  readonly booking = whatsappLink('Olá! Quero agendar banho e tosa no Espaço Beleza do MundoPet 🛁');
+  readonly booking = computed(() => this.site.whatsappLink('Olá! Quero agendar banho e tosa no Espaço Beleza do MundoPet 🛁'));
 
   // galeria
   readonly service = signal<BeautyService | null>(null);

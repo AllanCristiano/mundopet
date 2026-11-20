@@ -1,7 +1,8 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
-import { CHAPTERS, SERVICES, WHATSAPP_URL } from '../landing.data';
+import { SiteConfigService } from '../../core/site-config';
+import { SERVICES } from '../landing.data';
 import { RevealDirective } from '../motion/reveal.directive';
 import { ScrollProgressDirective } from '../motion/scroll-progress.directive';
 import { PetArt } from '../pet-art';
@@ -13,8 +14,10 @@ import { PetArt } from '../pet-art';
   styleUrl: './landing-chapters.scss',
 })
 export class LandingChapters {
-  readonly chapters = CHAPTERS;
-  readonly whatsapp = WHATSAPP_URL;
+  private readonly site = inject(SiteConfigService);
+  /** So os servicos ligados na gestao, na ordem e com numeracao 01, 02... */
+  readonly chapters = this.site.chapters;
+  readonly whatsapp = this.site.whatsappUrl;
   /** Faixa infinita: repetida para o loop nao ter emenda. */
   readonly marquee = [...SERVICES, ...SERVICES, ...SERVICES];
   /** Quantidade de elementos decorativos animados por cena (estrelas, racao, bolhas...). */

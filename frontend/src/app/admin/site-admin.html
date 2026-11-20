@@ -1,0 +1,393 @@
+<header class="bar">
+  <div class="bar__inner container">
+    <a routerLink="/" class="logo" aria-label="MundoPet, página inicial">Mundo <span aria-hidden="true">✦</span> Pet</a>
+    <span class="where">Gestão do site</span>
+    <div class="tools">
+      <app-theme-toggle />
+      @if (session.token()) {
+        <a class="out" routerLink="/" target="_blank">Ver site ↗</a>
+        <button type="button" class="out" (click)="logout()">Sair</button>
+      }
+    </div>
+  </div>
+</header>
+
+@if (!session.token()) {
+  <main class="container">
+    <form class="login card" (submit)="login($event)">
+      <span class="lock" aria-hidden="true">🔐</span>
+      <h1>Gestão do <em>site</em></h1>
+      <p class="muted">Aqui você troca os dados da loja, os textos da página inicial, os serviços, os números e a taxa de entrega. Entre com o token de acesso (<code>ADMIN_TOKEN</code>).</p>
+      <label>
+        <span>Token de acesso</span>
+        <input type="password" name="token" autocomplete="current-password" [value]="tokenInput()" (input)="tokenInput.set(val($event))" />
+      </label>
+      @if (session.notice()) {
+        <p class="error" role="alert">{{ session.notice() }}</p>
+      }
+      <button type="submit" class="btn btn--gold" [disabled]="!tokenInput().trim() || checking()">
+        {{ checking() ? 'Conferindo…' : 'Entrar' }}
+      </button>
+    </form>
+  </main>
+} @else {
+  <div class="layout container">
+    <aside class="side">
+      <nav class="toc" aria-label="Seções da gestão">
+        @for (s of sections; track s.id) {
+          <a [href]="'/gestao#' + s.id" (click)="jump($event, s.id)">{{ s.label }}</a>
+        }
+      </nav>
+      <div class="shortcuts">
+        <a routerLink="/beleza/admin">📸 Fotos e depoimentos</a>
+        <a routerLink="/racoes" target="_blank">🛒 Ver a loja</a>
+      </div>
+    </aside>
+
+    <main class="content">
+      <div class="title">
+        <h1>Gestão do <em>site</em></h1>
+        <p class="muted small">
+          @if (updatedAt()) {
+            Última alteração: {{ updatedAt() | date: 'dd/MM/yyyy HH:mm' }} · versão {{ version() }}
+          } @else {
+            Ainda com os textos padrão. Ajuste e clique em <strong>Salvar</strong>.
+          }
+        </p>
+        <p class="quick">
+          <a routerLink="/beleza/admin">📸 Fotos e depoimentos →</a>
+          <a routerLink="/racoes" target="_blank">🛒 Ver a loja ↗</a>
+        </p>
+      </div>
+
+      <!-- ================= LOJA ================= -->
+      <section id="loja" class="card">
+        <h2>Loja e contato</h2>
+        <div class="grid">
+          <label>
+            <span>Nome da loja</span>
+            <input type="text" maxlength="40" [value]="draft().store.name" (input)="patch('store', { name: val($event) })" />
+            @if (err('store.name'); as m) { <small class="err">{{ m }}</small> }
+          </label>
+          <label>
+            <span>WhatsApp <small>(DDI + DDD + número)</small></span>
+            <input type="tel" inputmode="numeric" maxlength="15" placeholder="5511999998888" [value]="draft().store.whatsapp" (input)="patch('store', { whatsapp: digits($event) })" />
+            @if (err('store.whatsapp'); as m) {
+              <small class="err">{{ m }}</small>
+            } @else {
+              <a class="test" [href]="whatsappTest()" target="_blank" rel="noopener">Testar o link do WhatsApp ↗</a>
+            }
+          </label>
+          <label class="wide">
+            <span>Mensagem pronta do botão "Agendar visita"</span>
+            <input type="text" maxlength="200" [value]="draft().store.whatsappMessage" (input)="patch('store', { whatsappMessage: val($event) })" />
+          </label>
+          <label class="wide">
+            <span>Sobre a loja <small>(aparece no rodapé)</small></span>
+            <textarea rows="2" maxlength="220" [value]="draft().store.about" (input)="patch('store', { about: val($event) })"></textarea>
+          </label>
+          <label>
+            <span>Instagram <small>(link)</small></span>
+            <input type="url" maxlength="200" placeholder="https://www.instagram.com/sualoja" [value]="draft().store.instagram" (input)="patch('store', { instagram: val($event).trim() })" />
+            @if (err('store.instagram'); as m) { <small class="err">{{ m }}</small> }
+          </label>
+          <label>
+            <span>Facebook <small>(opcional)</small></span>
+            <input type="url" maxlength="200" placeholder="https://www.facebook.com/sualoja" [value]="draft().store.facebook" (input)="patch('store', { facebook: val($event).trim() })" />
+            @if (err('store.facebook'); as m) { <small class="err">{{ m }}</small> }
+          </label>
+          <label>
+            <span>E-mail <small>(opcional)</small></span>
+            <input type="email" maxlength="80" [value]="draft().store.email" (input)="patch('store', { email: val($event).trim() })" />
+            @if (err('store.email'); as m) { <small class="err">{{ m }}</small> }
+          </label>
+        </div>
+      </section>
+
+      <!-- ================= ENDERECO ================= -->
+      <section id="endereco" class="card">
+        <h2>Endereço e mapa</h2>
+        <div class="grid">
+          <label>
+            <span>CEP</span>
+            <span class="inline">
+              <input type="text" inputmode="numeric" maxlength="9" [value]="draft().address.zip" (input)="setZip(val($event))" />
+              <button type="button" class="mini" (click)="fillFromCep()" [disabled]="cep().busy">{{ cep().busy ? '…' : 'Buscar' }}</button>
+            </span>
+            @if (err('address.zip'); as m) { <small class="err">{{ m }}</small> }
+            @if (cep().msg) { <small class="note">{{ cep().msg }}</small> }
+          </label>
+          <label class="wide2">
+            <span>Rua e número</span>
+            <input type="text" maxlength="120" [value]="draft().address.street" (input)="patch('address', { street: val($event) })" />
+            @if (err('address.street'); as m) { <small class="err">{{ m }}</small> }
+          </label>
+          <label>
+            <span>Bairro</span>
+            <input type="text" maxlength="60" [value]="draft().address.district" (input)="patch('address', { district: val($event) })" />
+          </label>
+          <label>
+            <span>Cidade</span>
+            <input type="text" maxlength="60" [value]="draft().address.city" (input)="patch('address', { city: val($event) })" />
+            @if (err('address.city'); as m) { <small class="err">{{ m }}</small> }
+          </label>
+          <label>
+            <span>UF</span>
+            <select (change)="patch('address', { state: val($event) })">
+              @for (uf of ufs; track uf) {
+                <option [value]="uf" [selected]="draft().address.state.toUpperCase() === uf">{{ uf }}</option>
+              }
+            </select>
+          </label>
+          <label class="wide">
+            <span>Coordenadas da loja <small>(no Google Maps: botão direito no ponto da loja → clique nos números para copiar)</small></span>
+            <input type="text" placeholder="-23.5505, -46.6333" [value]="coordsText()" (input)="setCoords(val($event))" />
+            @if (err('address.coords'); as m) {
+              <small class="err">{{ m }}</small>
+            } @else {
+              <small class="note">Usadas no mapa e no cálculo da taxa de entrega.</small>
+            }
+          </label>
+          <label class="wide">
+            <span>Busca no Google Maps <small>(opcional: "Nome da loja, Rua X 123, Cidade" mostra o cartão da empresa)</small></span>
+            <input type="text" maxlength="160" [value]="draft().address.mapsQuery" (input)="patch('address', { mapsQuery: val($event) })" />
+          </label>
+        </div>
+        @if (!err('address.coords')) {
+          <div class="preview">
+            <p class="muted small">Prévia do rodapé:</p>
+            <app-landing-map [store]="mapStore()" />
+          </div>
+        }
+      </section>
+
+      <!-- ================= HORARIOS E AVISO ================= -->
+      <section id="horarios" class="card">
+        <h2>Horários e aviso</h2>
+        <div class="grid">
+          <label>
+            <span>Horário da loja</span>
+            <input type="text" maxlength="80" [value]="draft().hours.store" (input)="patch('hours', { store: val($event) })" />
+            @if (err('hours.store'); as m) { <small class="err">{{ m }}</small> }
+          </label>
+          <label>
+            <span>Horário da clínica <small>(vazio = não mostra)</small></span>
+            <input type="text" maxlength="80" [value]="draft().hours.clinic" (input)="patch('hours', { clinic: val($event) })" />
+          </label>
+        </div>
+        <div class="toggle-row">
+          <label class="switch">
+            <input type="checkbox" [checked]="draft().announcement.enabled" (change)="patch('announcement', { enabled: checked($event) })" />
+            <span aria-hidden="true"></span>
+            Mostrar aviso no topo da página inicial
+          </label>
+        </div>
+        @if (draft().announcement.enabled) {
+          <label>
+            <span>Aviso <small>(ex.: "Fechado no feriado de 25/12")</small></span>
+            <input type="text" maxlength="140" [value]="draft().announcement.text" (input)="patch('announcement', { text: val($event) })" />
+            @if (err('announcement.text'); as m) { <small class="err">{{ m }}</small> }
+          </label>
+        }
+      </section>
+
+      <!-- ================= PAGINA INICIAL ================= -->
+      <section id="inicio" class="card">
+        <h2>Página inicial</h2>
+        <h3>Abertura</h3>
+        <div class="grid">
+          <label class="wide">
+            <span>Linha de cima</span>
+            <input type="text" maxlength="60" [value]="draft().hero.kicker" (input)="patch('hero', { kicker: val($event) })" />
+          </label>
+          <label class="wide2">
+            <span>Título</span>
+            <input type="text" maxlength="80" [value]="draft().hero.title" (input)="patch('hero', { title: val($event) })" />
+            @if (err('hero.title'); as m) { <small class="err">{{ m }}</small> }
+          </label>
+          <label>
+            <span>Palavra em destaque</span>
+            <input type="text" maxlength="30" [value]="draft().hero.highlight" (input)="patch('hero', { highlight: val($event) })" />
+          </label>
+          <label class="wide">
+            <span>Texto</span>
+            <textarea rows="2" maxlength="240" [value]="draft().hero.subtitle" (input)="patch('hero', { subtitle: val($event) })"></textarea>
+          </label>
+        </div>
+        <p class="sample">{{ draft().hero.title }} <em>{{ draft().hero.highlight }}</em></p>
+
+        <h3>Convite do final da página</h3>
+        <div class="grid">
+          <label class="wide">
+            <span>Linha de cima</span>
+            <input type="text" maxlength="60" [value]="draft().cta.kicker" (input)="patch('cta', { kicker: val($event) })" />
+          </label>
+          <label class="wide2">
+            <span>Título</span>
+            <input type="text" maxlength="40" [value]="draft().cta.title" (input)="patch('cta', { title: val($event) })" />
+            @if (err('cta.title'); as m) { <small class="err">{{ m }}</small> }
+          </label>
+          <label>
+            <span>Palavra em destaque</span>
+            <input type="text" maxlength="30" [value]="draft().cta.highlight" (input)="patch('cta', { highlight: val($event) })" />
+          </label>
+          <label class="wide">
+            <span>Texto</span>
+            <textarea rows="2" maxlength="240" [value]="draft().cta.text" (input)="patch('cta', { text: val($event) })"></textarea>
+          </label>
+        </div>
+      </section>
+
+      <!-- ================= SERVICOS ================= -->
+      <section id="servicos" class="card">
+        <h2>Serviços</h2>
+        <p class="muted small">Desligue o que a loja não oferece (some da página e do menu) e mude a ordem com as setas.</p>
+        @if (err('chapters'); as m) { <p class="err">{{ m }}</p> }
+        <ol class="chapters">
+          @for (c of draft().chapters; track c.id; let i = $index; let first = $first; let last = $last) {
+            <li [class.off]="!c.enabled">
+              <div class="chapter-head">
+                <strong>{{ chapterNames[c.id] }}</strong>
+                <span class="order">
+                  <button type="button" class="mini" (click)="moveChapter(i, -1)" [disabled]="first" [attr.aria-label]="'Subir ' + chapterNames[c.id]">↑</button>
+                  <button type="button" class="mini" (click)="moveChapter(i, 1)" [disabled]="last" [attr.aria-label]="'Descer ' + chapterNames[c.id]">↓</button>
+                </span>
+                <label class="switch">
+                  <input type="checkbox" [checked]="c.enabled" (change)="patchChapter(i, { enabled: checked($event) })" />
+                  <span aria-hidden="true"></span>
+                  {{ c.enabled ? 'Ligado' : 'Desligado' }}
+                </label>
+              </div>
+              @if (c.enabled) {
+                <div class="grid">
+                  <label class="wide">
+                    <span>Linha de cima</span>
+                    <input type="text" maxlength="40" [value]="c.kicker" (input)="patchChapter(i, { kicker: val($event) })" />
+                  </label>
+                  <label class="wide2">
+                    <span>Título</span>
+                    <input type="text" maxlength="40" [value]="c.title" (input)="patchChapter(i, { title: val($event) })" />
+                    @if (err('chapters.' + i + '.title'); as m) { <small class="err">{{ m }}</small> }
+                  </label>
+                  <label>
+                    <span>Destaque</span>
+                    <input type="text" maxlength="30" [value]="c.highlight" (input)="patchChapter(i, { highlight: val($event) })" />
+                  </label>
+                  <label class="wide">
+                    <span>Texto</span>
+                    <textarea rows="2" maxlength="300" [value]="c.text" (input)="patchChapter(i, { text: val($event) })"></textarea>
+                  </label>
+                  <label class="wide2">
+                    <span>Destaques <small>(um por linha, até 6)</small></span>
+                    <textarea rows="4" [value]="c.features.join('\n')" (change)="setFeatures(i, val($event))"></textarea>
+                    @if (err('chapters.' + i + '.features'); as m) { <small class="err">{{ m }}</small> }
+                  </label>
+                  <label>
+                    <span>Texto do botão</span>
+                    <input type="text" maxlength="40" [value]="c.cta" (input)="patchChapter(i, { cta: val($event) })" />
+                    @if (err('chapters.' + i + '.cta'); as m) { <small class="err">{{ m }}</small> }
+                  </label>
+                </div>
+              }
+            </li>
+          }
+        </ol>
+      </section>
+
+      <!-- ================= NUMEROS ================= -->
+      <section id="numeros" class="card">
+        <h2>Números</h2>
+        <p class="muted small">Aparecem em "Números que abanam o rabo". "Nota real" usa a média dos depoimentos aprovados no Espaço Beleza.</p>
+        <ul class="stats">
+          @for (s of draft().stats; track $index; let i = $index) {
+            <li>
+              <label class="lbl">
+                <span>Descrição</span>
+                <input type="text" maxlength="40" [value]="s.label" (input)="patchStat(i, { label: val($event) })" />
+                @if (err('stats.' + i + '.label'); as m) { <small class="err">{{ m }}</small> }
+              </label>
+              <label>
+                <span>Valor</span>
+                <select (change)="patchStat(i, { source: $any(val($event)) })">
+                  <option value="MANUAL" [selected]="s.source === 'MANUAL'">Número fixo</option>
+                  <option value="RATING" [selected]="s.source === 'RATING'">Nota real ★</option>
+                </select>
+              </label>
+              @if (s.source === 'MANUAL') {
+                <label>
+                  <span>Número</span>
+                  <input type="text" inputmode="decimal" [value]="s.value" (input)="patchStat(i, { value: num($event), decimals: val($event).includes(',') || val($event).includes('.') ? 1 : 0 })" />
+                  @if (err('stats.' + i + '.value'); as m) { <small class="err">{{ m }}</small> }
+                </label>
+              }
+              <label class="tiny">
+                <span>Antes</span>
+                <input type="text" maxlength="6" placeholder="+" [value]="s.prefix" (input)="patchStat(i, { prefix: val($event) })" />
+              </label>
+              <label class="tiny">
+                <span>Depois</span>
+                <input type="text" maxlength="8" placeholder="h" [value]="s.suffix" (input)="patchStat(i, { suffix: val($event) })" />
+              </label>
+              <button type="button" class="mini rm" (click)="removeStat(i)" [disabled]="draft().stats.length <= 1" [attr.aria-label]="'Remover ' + s.label">✕</button>
+            </li>
+          }
+        </ul>
+        @if (draft().stats.length < 4) {
+          <button type="button" class="btn add" (click)="addStat()">+ Adicionar número</button>
+        }
+      </section>
+
+      <!-- ================= ENTREGA ================= -->
+      <section id="entrega" class="card">
+        <h2>Entrega</h2>
+        <p class="muted small">Taxa = distância da loja até o cliente × preço por km. Acima do raio, o site oferece só a retirada.</p>
+        <div class="grid">
+          <label>
+            <span>Preço por km (R$)</span>
+            <input type="text" inputmode="decimal" [value]="draft().delivery.pricePerKm" (input)="patch('delivery', { pricePerKm: num($event) })" />
+            @if (err('delivery.pricePerKm'); as m) { <small class="err">{{ m }}</small> }
+          </label>
+          <label>
+            <span>Entrega até (km)</span>
+            <input type="text" inputmode="decimal" [value]="draft().delivery.maxKm" (input)="patch('delivery', { maxKm: num($event) })" />
+            @if (err('delivery.maxKm'); as m) { <small class="err">{{ m }}</small> }
+          </label>
+        </div>
+        @if (!err('delivery.pricePerKm') && !err('delivery.maxKm')) {
+          <p class="sample small">Exemplo: cliente a {{ deliveryExample().km }} km paga {{ money(deliveryExample().fee) }} de entrega.</p>
+        }
+      </section>
+    </main>
+  </div>
+
+  <!-- barra de salvar -->
+  <div class="savebar" [class.show]="dirty() || shownResult()" role="region" aria-label="Salvar alterações">
+    <div class="container savebar__inner">
+      @if (shownResult(); as r) {
+        <p [class]="r.ok ? 'ok' : 'error'" role="status">
+          {{ r.text }}
+          @if (r.conflict) {
+            <button type="button" class="mini" (click)="reload()">Recarregar</button>
+          }
+        </p>
+      } @else if (errorCount() > 0) {
+        <p class="error">Corrija {{ errorCount() }} {{ errorCount() === 1 ? 'campo' : 'campos' }} para salvar.</p>
+      } @else {
+        <p class="muted">Alterações ainda não salvas.</p>
+      }
+      @if (serverErrors().length) {
+        <ul class="server-errors">
+          @for (e of serverErrors(); track e) {
+            <li>{{ e }}</li>
+          }
+        </ul>
+      }
+      <div class="actions">
+        <button type="button" class="btn" (click)="discard()" [disabled]="!dirty() || saving()">Descartar</button>
+        <button type="button" class="btn btn--gold" (click)="save()" [disabled]="!dirty() || errorCount() > 0 || saving()">
+          {{ saving() ? 'Salvando…' : 'Salvar' }}
+        </button>
+      </div>
+    </div>
+  </div>
+}

@@ -6,7 +6,7 @@
   </div>
 </div>
 
-@for (c of chapters; track c.id; let i = $index) {
+@for (c of chapters(); track c.id; let i = $index) {
   <section
     class="chapter"
     [class.reverse]="i % 2 === 1"
@@ -57,7 +57,7 @@
       <div class="copy">
         <p class="kicker" appReveal>Capítulo {{ c.number }} · {{ c.kicker }}</p>
         <h2 [id]="c.id + '-title'" [appReveal]="100">
-          {{ c.title }} <em>{{ c.titleEm }}</em>
+          {{ c.title }} <em>{{ c.highlight }}</em>
         </h2>
         <p class="text" [appReveal]="200">{{ c.text }}</p>
         <ul class="features">
@@ -68,12 +68,12 @@
         @if (c.scene === 'beauty') {
           <div class="ctas" [appReveal]="600">
             <a class="btn btn--gold" routerLink="/beleza">Ver fotos e depoimentos <span aria-hidden="true">→</span></a>
-            <a class="btn" [href]="whatsapp" target="_blank" rel="noopener">{{ c.cta }}</a>
+            <a class="btn" [href]="whatsapp()" target="_blank" rel="noopener">{{ c.cta }}</a>
           </div>
         } @else if (c.scene === 'food') {
           <a class="btn btn--gold" routerLink="/racoes" [appReveal]="600">{{ c.cta }} <span aria-hidden="true">→</span></a>
         } @else {
-          <a class="btn" [href]="whatsapp" target="_blank" rel="noopener" [appReveal]="600">{{ c.cta }} <span aria-hidden="true">→</span></a>
+          <a class="btn" [href]="whatsapp()" target="_blank" rel="noopener" [appReveal]="600">{{ c.cta }} <span aria-hidden="true">→</span></a>
         }
       </div>
     </div>

@@ -11,6 +11,7 @@ Monólito modular com escala horizontal até 6 réplicas, totalmente assíncrono
   SPA Angular servida  │   ├ address  (CEP)                             │
   pelo próprio nginx   │   ├ delivery (taxa por km)                     │
                        │   ├ beauty   (fotos/depoim.)                   │
+                       │   ├ site     (gestão do site)                  │
                        │   ├ files    (MinIO)                           │
                        │   ├ queue    (jobs assíncronos)                │
                        │   └ shared   (erros, rate limit, admin)        │
@@ -92,6 +93,26 @@ como uma mensagem formatada (itens, quantidade, preço unitário "de/por", subto
   e arredonda para cima em 0,1 km. Acima de `DELIVERY_MAX_KM` o envio é bloqueado (fora da área); se não der para
   localizar o CEP, a taxa vai como "a combinar". Configure no `.env`: `STORE_LAT`, `STORE_LNG`,
   `DELIVERY_PRICE_PER_KM`, `DELIVERY_MAX_KM`, `DELIVERY_ROAD_FACTOR`.
+
+## Gestão do site (`/gestao`)
+
+Página do dono para personalizar o site **sem programador e sem deploy** (mesmo token `ADMIN_TOKEN` da área da clínica):
+
+| Seção | O que muda |
+|---|---|
+| Loja e contato | nome, WhatsApp (todos os botões e o pedido da loja), mensagem pronta, Instagram, Facebook, e-mail, texto do rodapé |
+| Endereço e mapa | CEP com busca automática, rua, bairro, cidade, UF, coordenadas (cola do Google Maps) com prévia do mapa |
+| Horários e aviso | horário da loja/clínica e um aviso no topo da página inicial (ex.: feriado) |
+| Página inicial | título, destaque, textos da abertura e do convite final |
+| Serviços | liga/desliga cada serviço (some da página e do menu), ordem, títulos, textos, destaques e botões |
+| Números | até 4 números; "nota real" usa a média dos depoimentos aprovados |
+| Entrega | preço por km e raio máximo (a taxa usa as coordenadas da loja acima) |
+
+- Fica no Postgres (`site_settings`, JSONB validado pela API: links só `https://`, coordenadas no Brasil, tamanhos máximos).
+- Duas pessoas editando ao mesmo tempo: quem salvar por último recebe "outra pessoa salvou antes" (versão), nada se perde em silêncio.
+- O site lê a configuração ao abrir (espera no máximo 1,5 s; se a API falhar, usa os textos padrão de `landing.data.ts`).
+- As réplicas da API guardam a configuração por 5 s; a entrega usa o `.env` (`STORE_LAT`, `DELIVERY_*`) só enquanto o dono não salvar.
+- A seção "Quem conhece, volta" da landing mostra os **depoimentos reais aprovados** no Espaço Beleza.
 
 ## Espaço Beleza (`/beleza`)
 

@@ -11,7 +11,9 @@ Postgres (R2DBC), Redis (fila via Streams + rate limit), MinIO, nginx. Tudo orqu
 - API escala até 6 réplicas: mantenha-a stateless e respeite o orçamento de conexões (pool × 6 < max_connections).
 - Frontend é MOBILE FIRST (CSS base = celular, desktop só via `min-width`) e a landing é cheia de animação,
   mas só `transform`/`opacity`, com `prefers-reduced-motion` respeitado. Use as diretivas em `frontend/src/app/landing/motion/`.
-- Landing: `/` (textos em `landing/landing.data.ts`); painel de pets: `/pets`.
+- Landing: `/`. Textos, contatos, serviços, números e entrega são editados pelo dono em `/gestao` (módulo `site`);
+  `landing/landing.data.ts` só tem os textos PADRÃO. Componentes leem do `SiteConfigService` (nunca de constantes).
+- Espaço Beleza: `/beleza` (área da clínica `/beleza/admin`); loja: `/racoes`; painel de pets: `/pets`.
 
 Comandos:
 - Backend: `cd backend && ./mvnw verify` (precisa do Docker rodando). No Windows, `JAVA_HOME` deve apontar para a pasta do JDK, sem aspas e sem `\bin`.

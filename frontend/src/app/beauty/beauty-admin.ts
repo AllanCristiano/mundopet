@@ -2,6 +2,7 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { from, switchMap } from 'rxjs';
 
+import { AdminSession } from '../core/admin-session';
 import { ThemeToggle } from '../core/theme-toggle';
 import { BeautyApi } from './beauty.api';
 import {
@@ -19,25 +20,7 @@ import {
 } from './beauty.models';
 import { prepareImage } from './image-resize';
 
-/** Token so na sessao da aba (fecha a aba = sai). Nunca vai para o localStorage. */
-export const ADMIN_TOKEN_KEY = 'mundopet-admin-token';
-
-function readToken(): string {
-  try {
-    return sessionStorage.getItem(ADMIN_TOKEN_KEY) ?? '';
-  } catch {
-    return '';
-  }
-}
-
-function writeToken(token: string | null): void {
-  try {
-    if (token) sessionStorage.setItem(ADMIN_TOKEN_KEY, token);
-    else sessionStorage.removeItem(ADMIN_TOKEN_KEY);
-  } catch {
-    /* armazenamento bloqueado: segue so em memoria */
-  }
-}
+export { ADMIN_TOKEN_KEY } from '../core/admin-session';
 
 const EMPTY_FORM: PhotoForm = { petName: '', species: 'CAO', service: 'BANHO_TOSA', caption: '' };
 
@@ -50,6 +33,7 @@ const EMPTY_FORM: PhotoForm = { petName: '', species: 'CAO', service: 'BANHO_TOS
 })
 export class BeautyAdmin {
   private readonly api = inject(BeautyApi);
+  private readonly session = inject(AdminSession);
 
   readonly services: BeautyService[] = [...SERVICE_FILTERS, 'OUTRO'];
   readonly species: Species[] = ['CAO', 'GATO', 'OUTRO'];
@@ -59,10 +43,10 @@ export class BeautyAdmin {
   readonly authorLine = authorLine;
 
   // ---------- acesso ----------
-  readonly token = signal(readToken());
+  readonly token = this.session.token;
   readonly tokenInput = signal('');
   readonly checking = signal(false);
-  readonly loginError = signal<string | null>(null);
+  readonly loginError = this.session.notice;
   readonly tab = signal<'photos' | 'testimonials'>('photos');
 
   // ---------- fotos ----------
@@ -97,12 +81,10 @@ export class BeautyAdmin {
     if (!token || this.checking()) return;
     this.checking.set(true);
     this.loginError.set(null);
-    this.api.check(token).subscribe({
+    this.session.login(token).subscribe({
       next: () => {
         this.checking.set(false);
-        this.token.set(token);
         this.tokenInput.set('');
-        writeToken(token);
         this.loadAll();
       },
       error: (err: Error) => {
@@ -112,9 +94,8 @@ export class BeautyAdmin {
     });
   }
 
-  logout(): void {
-    this.token.set('');
-    writeToken(null);
+  logout(notice: string | null = null): void {
+    this.session.logout(notice);
     this.photos.set([]);
     this.pending.set([]);
   }
@@ -122,8 +103,7 @@ export class BeautyAdmin {
   /** Token expirou/foi trocado no servidor: volta para a tela de acesso. */
   private handle(err: Error & { status?: number }, set: (msg: string) => void): void {
     if (err.status === 401 || err.status === 403) {
-      this.logout();
-      this.loginError.set(err.message);
+      this.logout(err.message);
       return;
     }
     set(err.message);

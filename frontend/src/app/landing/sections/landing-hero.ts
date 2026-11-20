@@ -1,6 +1,7 @@
-import { Component, afterNextRender, signal } from '@angular/core';
+import { Component, afterNextRender, computed, inject, signal } from '@angular/core';
 
-import { PILLARS, WHATSAPP_URL } from '../landing.data';
+import { SiteConfigService } from '../../core/site-config';
+import { PILLARS } from '../landing.data';
 import { ScrollProgressDirective } from '../motion/scroll-progress.directive';
 import { PetArt } from '../pet-art';
 
@@ -27,10 +28,17 @@ export function makeParticles(count: number, seed = 7) {
   styleUrl: './landing-hero.scss',
 })
 export class LandingHero {
+  private readonly site = inject(SiteConfigService);
   readonly pillars = PILLARS;
-  readonly whatsapp = WHATSAPP_URL;
+  readonly whatsapp = this.site.whatsappUrl;
+  readonly hero = computed(() => this.site.settings().hero);
+  readonly announcement = computed(() => {
+    const a = this.site.settings().announcement;
+    return a.enabled && a.text.trim() ? a.text.trim() : null;
+  });
   readonly particles = makeParticles(22);
-  readonly titleWords = ['Tudo', 'o', 'que', 'o', 'seu', 'melhor', 'amigo'];
+  /** Palavras do titulo aparecem uma a uma; o destaque (italico) fecha a frase. */
+  readonly titleWords = computed(() => this.hero().title.split(/\s+/).filter(Boolean));
   readonly drawn = signal(false);
 
   constructor() {

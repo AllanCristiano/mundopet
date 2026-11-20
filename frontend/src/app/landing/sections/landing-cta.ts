@@ -1,6 +1,6 @@
-import { Component } from '@angular/core';
+import { Component, computed, inject } from '@angular/core';
 
-import { WHATSAPP_URL } from '../landing.data';
+import { SiteConfigService } from '../../core/site-config';
 import { RevealDirective } from '../motion/reveal.directive';
 import { PetArt } from '../pet-art';
 import { makeParticles } from './landing-hero';
@@ -24,13 +24,11 @@ import { makeParticles } from './landing-hero';
 
       <div class="inner container">
         <div class="cat" appReveal><app-pet-art kind="cat" /></div>
-        <p class="kicker" appReveal>Portas abertas todos os dias</p>
-        <h2 id="cta-title" [appReveal]="120">Venha nos <em>conhecer</em></h2>
-        <p class="sub" [appReveal]="220">
-          Traga seu pet para um tour: conheça as suítes do hotel, o spa e a clínica. O primeiro petisco é por nossa conta.
-        </p>
+        <p class="kicker" appReveal>{{ cta().kicker }}</p>
+        <h2 id="cta-title" [appReveal]="120">{{ cta().title }} <em>{{ cta().highlight }}</em></h2>
+        <p class="sub" [appReveal]="220">{{ cta().text }}</p>
         <div class="actions" [appReveal]="320">
-          <a class="btn btn--gold" [href]="whatsapp" target="_blank" rel="noopener">Agendar visita</a>
+          <a class="btn btn--gold" [href]="whatsapp()" target="_blank" rel="noopener">Agendar visita</a>
           <a class="btn" href="#topo">Voltar ao topo</a>
         </div>
       </div>
@@ -60,6 +58,8 @@ import { makeParticles } from './landing-hero';
   `,
 })
 export class LandingCta {
-  readonly whatsapp = WHATSAPP_URL;
+  private readonly site = inject(SiteConfigService);
+  readonly whatsapp = this.site.whatsappUrl;
+  readonly cta = computed(() => this.site.settings().cta);
   readonly petals = makeParticles(18, 42);
 }

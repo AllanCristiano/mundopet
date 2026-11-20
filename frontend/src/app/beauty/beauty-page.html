@@ -19,7 +19,7 @@
     <h1>Saem daqui <em>mais felizes</em></h1>
     <p class="sub">Banho com produtos hipoalergênicos, tosa na tesoura, hidratação e spa. Veja quem já passou por aqui e o que os tutores contam.</p>
     @if (hasRating()) {
-      <a class="score" href="#depoimentos">
+      <a class="score" routerLink="/beleza" fragment="depoimentos">
         <span class="big">{{ rating(summary()!.average) }}</span>
         <span>
           <span class="st" aria-hidden="true">{{ stars(summary()!.average) }}</span>
@@ -29,8 +29,8 @@
       </a>
     }
     <div class="cta">
-      <a class="btn btn--gold" [href]="booking" target="_blank" rel="noopener">Agendar banho <span aria-hidden="true">→</span></a>
-      <a class="btn" href="#depoimentos">Depoimentos</a>
+      <a class="btn btn--gold" [href]="booking()" target="_blank" rel="noopener">Agendar banho <span aria-hidden="true">→</span></a>
+      <a class="btn" routerLink="/beleza" fragment="depoimentos">Depoimentos</a>
     </div>
   </div>
 </section>

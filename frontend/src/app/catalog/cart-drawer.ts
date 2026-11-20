@@ -2,7 +2,7 @@ import { Component, computed, effect, inject, signal } from '@angular/core';
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 import { catchError, combineLatest, debounceTime, filter, map, of, switchMap, tap } from 'rxjs';
 
-import { whatsappLink } from '../landing/landing.data';
+import { SiteConfigService } from '../core/site-config';
 import { DeliveryAddress, isAddressValid, loadAddress, saveAddress, toApiAddress } from './address';
 import { AddressForm } from './address-form';
 import { BagArt } from './bag-art';
@@ -21,6 +21,7 @@ import { whatsappToHtml } from './whatsapp-format';
 export class CartDrawer {
   readonly cart = inject(CartStore);
   private readonly api = inject(CatalogApi);
+  private readonly site = inject(SiteConfigService);
 
   readonly customerName = signal('');
   readonly fulfillment = signal<Fulfillment>('PICKUP');
@@ -125,7 +126,7 @@ export class CartDrawer {
   send(): void {
     const text = this.quote()?.whatsappText;
     if (!this.canSend() || !text) return;
-    window.open(whatsappLink(text), '_blank', 'noopener');
+    window.open(this.site.whatsappLink(text), '_blank', 'noopener');
     this.sent.set(true);
   }
 
