@@ -45,6 +45,8 @@ describe('Espaco Beleza', () => {
     http = TestBed.inject(HttpTestingController);
   });
   afterEach(() => {
+    http.match('/api/admin/mode').forEach((r) => r.flush({ enabled: true, demo: false }));
+    http.match('/api/admin/session').forEach((r) => r.flush(null));
     http.verify();
     document.body.style.overflow = '';
     sessionStorage.removeItem(ADMIN_TOKEN_KEY);
@@ -296,14 +298,18 @@ describe('Espaco Beleza', () => {
       return { f, el: f.nativeElement as HTMLElement, c: f.componentInstance };
     }
 
-    function loginAs(f: ComponentFixture<BeautyAdmin>, el: HTMLElement, token = 'tok-certo') {
-      const input = el.querySelector<HTMLInputElement>('input[name=token]')!;
-      input.value = token;
-      input.dispatchEvent(new Event('input'));
+    function loginAs(f: ComponentFixture<BeautyAdmin>, el: HTMLElement, user = 'dono', pass = 'senha-certa') {
+      http.match('/api/admin/mode').forEach((r) => r.flush({ enabled: true, demo: false }));
+      f.detectChanges();
+      for (const [name, value] of [['username', user], ['password', pass]]) {
+        const input = el.querySelector<HTMLInputElement>(`input[name=${name}]`)!;
+        input.value = value;
+        input.dispatchEvent(new Event('input'));
+      }
       f.detectChanges();
       el.querySelector<HTMLFormElement>('form.login')!.dispatchEvent(new Event('submit'));
       f.detectChanges();
-      return http.expectOne('/api/site/admin/check');
+      return http.expectOne('/api/admin/login');
     }
 
     function flushInitial(photos: BeautyPhoto[] = [], pending: Testimonial[] = []) {
@@ -311,24 +317,28 @@ describe('Espaco Beleza', () => {
       http.expectOne(`${BEAUTY_API}/admin/testimonials`).flush(pending);
     }
 
-    it('token errado mostra erro; certo entra, guarda na sessao e sai', () => {
+    it('login errado mostra erro; certo entra, guarda na sessao e sai', () => {
       const { f, el } = render();
       expect(el.querySelector('form.login')).not.toBeNull();
-      loginAs(f, el, 'errado').flush({ detail: 'Token inválido' }, { status: 401, statusText: 'x' });
+      loginAs(f, el, 'dono', 'errada').flush({ detail: 'Login ou senha inválidos' }, { status: 401, statusText: 'x' });
       f.detectChanges();
-      expect(el.querySelector('.login .error')!.textContent).toContain('Token inválido');
+      expect(el.querySelector('.login .error')!.textContent).toContain('Login ou senha inválidos');
 
       const ok = loginAs(f, el);
-      expect(ok.request.headers.get(ADMIN_HEADER)).toBe('tok-certo');
-      ok.flush(null);
+      expect(ok.request.body).toEqual({ username: 'dono', password: 'senha-certa' });
+      ok.flush({ token: 'tok-sessao', username: 'dono', demo: false, expiresInSeconds: 28800 });
       flushInitial();
       f.detectChanges();
-      expect(sessionStorage.getItem(ADMIN_TOKEN_KEY)).toBe('tok-certo');
+      expect(sessionStorage.getItem(ADMIN_TOKEN_KEY)).toBe('tok-sessao');
       expect(el.querySelector('.title')).not.toBeNull();
       expect(el.querySelector('.thumbs .none')).not.toBeNull();
 
       el.querySelector<HTMLButtonElement>('.out')!.click();
       f.detectChanges();
+      const bye = http.expectOne('/api/admin/session');
+      expect(bye.request.method).toBe('DELETE');
+      expect(bye.request.headers.get(ADMIN_HEADER)).toBe('tok-sessao');
+      bye.flush(null);
       expect(sessionStorage.getItem(ADMIN_TOKEN_KEY)).toBeNull();
       expect(el.querySelector('form.login')).not.toBeNull();
     });

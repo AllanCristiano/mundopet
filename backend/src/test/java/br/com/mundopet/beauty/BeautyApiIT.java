@@ -125,7 +125,7 @@ class BeautyApiIT extends IntegrationTestBase {
         int before = photos("size=48").items().size();
         upload(null, png(800, 600), "Rex").expectStatus().isUnauthorized();
         upload("errado", png(800, 600), "Rex").expectStatus().isUnauthorized()
-                .expectBody().jsonPath("$.detail").isEqualTo("Token inválido");
+                .expectBody().jsonPath("$.detail").value(d -> assertThat((String) d).contains("Entre de novo"));
         upload(TOKEN, "<script>alert(1)</script>".getBytes(), "Rex").expectStatus().isBadRequest()
                 .expectBody().jsonPath("$.detail").value(d -> assertThat((String) d).contains("JPG ou PNG"));
         upload(TOKEN, png(800, 600), " ").expectStatus().isBadRequest();

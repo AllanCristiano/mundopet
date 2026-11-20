@@ -2,6 +2,7 @@ import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed, fakeAsync, tick } from '@angular/core/testing';
 
+import { AdminLogin } from './admin-login';
 import { ADMIN_HEADER, ADMIN_TOKEN_KEY, AdminSession } from './admin-session';
 import { DEFAULT_SITE, SITE_API, SiteConfigService, mergeSettings, waLink } from './site-config';
 
@@ -94,36 +95,93 @@ describe('Configuracao do site', () => {
     expect(slow.cancelled).toBeTrue();
   }));
 
-  it('sessao da area administrativa: entra, guarda so na aba e sai com aviso', () => {
+  it('sessao da area administrativa: login e senha, guarda so na aba, sai encerrando no servidor', () => {
     const session = TestBed.inject(AdminSession);
     let error = '';
-    session.login('errado').subscribe({ error: (e: Error) => (error = e.message) });
-    http.expectOne('/api/site/admin/check').flush({ detail: 'Token inválido' }, { status: 401, statusText: 'x' });
-    expect(error).toBe('Token inválido');
+    session.login(' dono ', 'errada').subscribe({ error: (e: Error) => (error = e.message) });
+    const bad = http.expectOne('/api/admin/login');
+    expect(bad.request.body).toEqual({ username: 'dono', password: 'errada' });
+    bad.flush({ detail: 'Login ou senha inválidos' }, { status: 401, statusText: 'x' });
+    expect(error).toBe('Login ou senha inválidos');
     expect(session.token()).toBe('');
 
-    session.login('certo').subscribe();
-    const req = http.expectOne('/api/site/admin/check');
-    expect(req.request.headers.get(ADMIN_HEADER)).toBe('certo');
-    req.flush(null);
-    expect(session.token()).toBe('certo');
-    expect(sessionStorage.getItem(ADMIN_TOKEN_KEY)).toBe('certo');
-    expect(session.headers().headers.get(ADMIN_HEADER)).toBe('certo');
+    session.login('dono', 'certa').subscribe();
+    http.expectOne('/api/admin/login').flush({ token: 'tok-1', username: 'dono', demo: false, expiresInSeconds: 60 });
+    expect(session.token()).toBe('tok-1');
+    expect(session.username()).toBe('dono');
+    expect(sessionStorage.getItem(ADMIN_TOKEN_KEY)).toBe('tok-1');
+    expect(session.headers().headers.get(ADMIN_HEADER)).toBe('tok-1');
 
-    session.logout('Sessão expirada');
+    session.logout();
+    const del = http.expectOne('/api/admin/session');
+    expect(del.request.method).toBe('DELETE');
+    expect(del.request.headers.get(ADMIN_HEADER)).toBe('tok-1');
+    del.flush('', { status: 503, statusText: 'x' }); // servidor fora: sai mesmo assim
     expect(session.token()).toBe('');
-    expect(session.notice()).toBe('Sessão expirada');
     expect(sessionStorage.getItem(ADMIN_TOKEN_KEY)).toBeNull();
+
+    // sessao expirada: so limpa e avisa (nao chama o servidor)
+    session.token.set('velho');
+    session.logout('Sessão expirada');
+    http.expectNone('/api/admin/session');
+    expect(session.notice()).toBe('Sessão expirada');
+  });
+
+  it('modo da area: le do servidor; se falhar, pede login e senha', () => {
+    const session = TestBed.inject(AdminSession);
+    let mode: unknown;
+    session.mode().subscribe((m) => (mode = m));
+    http.expectOne('/api/admin/mode').flush({ enabled: true, demo: true });
+    expect(mode).toEqual({ enabled: true, demo: true });
+    session.mode().subscribe((m) => (mode = m));
+    http.expectOne('/api/admin/mode').flush('', { status: 500, statusText: 'x' });
+    expect(mode).toEqual({ enabled: true, demo: false });
+  });
+
+  it('tela de login: fora do modo demo exige login e senha; mostra/esconde a senha; area desligada avisa', () => {
+    const f = TestBed.createComponent(AdminLogin);
+    f.componentRef.setInput('title', 'Gestão do');
+    f.detectChanges();
+    http.expectOne('/api/admin/mode').flush({ enabled: false, demo: false });
+    f.detectChanges();
+    const el = f.nativeElement as HTMLElement;
+    expect(el.querySelector('h1')!.textContent).toContain('Gestão do');
+    expect(el.querySelector('.error')!.textContent).toContain('ADMIN_PASSWORD');
+    expect(el.querySelector('.demo')).toBeNull();
+    const submit = el.querySelector<HTMLButtonElement>('button[type=submit]')!;
+    expect(submit.disabled).toBeTrue();
+
+    const pass = el.querySelector<HTMLInputElement>('input[name=password]')!;
+    expect(pass.type).toBe('password');
+    el.querySelector<HTMLButtonElement>('.eye')!.click();
+    f.detectChanges();
+    expect(pass.type).toBe('text');
+
+    for (const [name, value] of [['username', 'dono'], ['password', 'x']]) {
+      const i = el.querySelector<HTMLInputElement>(`input[name=${name}]`)!;
+      i.value = value;
+      i.dispatchEvent(new Event('input'));
+    }
+    f.detectChanges();
+    expect(submit.disabled).toBeFalse();
+    let done = false;
+    f.componentInstance.done.subscribe(() => (done = true));
+    el.querySelector('form')!.dispatchEvent(new Event('submit'));
+    el.querySelector('form')!.dispatchEvent(new Event('submit')); // clique duplo nao manda duas vezes
+    http.expectOne('/api/admin/login').flush({ token: 't', username: 'dono', demo: false, expiresInSeconds: 1 });
+    expect(done).toBeTrue();
+    expect(f.componentInstance.password()).toBe('');
   });
 
   it('armazenamento bloqueado nao quebra a sessao', () => {
     spyOn(Storage.prototype, 'setItem').and.throwError('bloqueado');
     spyOn(Storage.prototype, 'removeItem').and.throwError('bloqueado');
     const session = TestBed.inject(AdminSession);
-    session.login('x').subscribe();
-    http.expectOne('/api/site/admin/check').flush(null);
+    session.login('', '').subscribe();
+    http.expectOne('/api/admin/login').flush({ token: 'x', username: 'demonstração', demo: true, expiresInSeconds: 1 });
     expect(session.token()).toBe('x');
     expect(() => session.logout()).not.toThrow();
+    http.expectOne('/api/admin/session').flush(null);
     // o afterEach limpa a sessao: libera o armazenamento de novo
     (Storage.prototype.setItem as jasmine.Spy).and.callThrough();
     (Storage.prototype.removeItem as jasmine.Spy).and.callThrough();

@@ -6,6 +6,7 @@ import { RouterLink } from '@angular/router';
 import { beautyError } from '../beauty/beauty.api';
 import { AddressApi, UFS, cepDigits, maskCep } from '../catalog/address';
 import { money } from '../catalog/catalog.models';
+import { AdminLogin } from '../core/admin-login';
 import { AdminSession } from '../core/admin-session';
 import { SITE_API, SiteConfigService, SiteSettings, SiteSnapshot, waLink } from '../core/site-config';
 import { ThemeToggle } from '../core/theme-toggle';
@@ -85,7 +86,7 @@ export function parseCoords(raw: string): { lat: number; lng: number } | null {
 /** /gestao: o dono personaliza o site (sem programador e sem deploy). */
 @Component({
   selector: 'app-site-admin',
-  imports: [RouterLink, ThemeToggle, LandingMap, DatePipe],
+  imports: [RouterLink, ThemeToggle, LandingMap, DatePipe, AdminLogin],
   templateUrl: './site-admin.html',
   styleUrl: './site-admin.scss',
   host: { '(window:beforeunload)': 'beforeUnload($event)' },
@@ -100,10 +101,6 @@ export class SiteAdmin {
   readonly chapterNames = CHAPTER_NAMES;
   readonly ufs = UFS;
   readonly money = money;
-
-  // ---------- acesso ----------
-  readonly tokenInput = signal('');
-  readonly checking = signal(false);
 
   // ---------- edicao ----------
   readonly saved = signal<Settings>(structuredClone(this.site.settings()));
@@ -144,24 +141,6 @@ export class SiteAdmin {
   }
 
   // ---------- acesso ----------
-
-  login(e: Event): void {
-    e.preventDefault();
-    const token = this.tokenInput().trim();
-    if (!token || this.checking()) return;
-    this.checking.set(true);
-    this.session.login(token).subscribe({
-      next: () => {
-        this.checking.set(false);
-        this.tokenInput.set('');
-        this.reload();
-      },
-      error: (err: Error) => {
-        this.checking.set(false);
-        this.session.notice.set(err.message);
-      },
-    });
-  }
 
   logout(): void {
     this.session.logout();

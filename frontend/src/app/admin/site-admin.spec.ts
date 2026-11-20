@@ -15,6 +15,8 @@ describe('Gestao do site', () => {
     http = TestBed.inject(HttpTestingController);
   });
   afterEach(() => {
+    http.match('/api/admin/mode').forEach((r) => r.flush({ enabled: true, demo: false }));
+    http.match('/api/admin/session').forEach((r) => r.flush(null));
     http.verify();
     sessionStorage.removeItem(ADMIN_TOKEN_KEY);
   });
@@ -77,18 +79,24 @@ describe('Gestao do site', () => {
     f.detectChanges();
   }
 
-  it('sem token pede acesso; token certo entra e carrega a versao atual', () => {
+  it('modo demonstracao: aviso na tela e entra com login e senha em branco; depois carrega a versao atual', () => {
     const { f, el } = render();
-    expect(el.querySelector('form.login')).not.toBeNull();
-    type(el, f, 'input[name=token]', 'errado');
-    el.querySelector('form.login')!.dispatchEvent(new Event('submit'));
-    http.expectOne('/api/site/admin/check').flush({ detail: 'Token inválido' }, { status: 401, statusText: 'x' });
+    http.expectOne('/api/admin/mode').flush({ enabled: true, demo: true });
     f.detectChanges();
-    expect(el.querySelector('.login .error')!.textContent).toContain('Token inválido');
+    expect(el.querySelector('form.login')).not.toBeNull();
+    expect(el.querySelector('.login .demo')!.textContent).toContain('em branco');
+    const submit = el.querySelector<HTMLButtonElement>('form.login button[type=submit]')!;
+    expect(submit.disabled).toBeFalse();
 
-    type(el, f, 'input[name=token]', 'tok');
     el.querySelector('form.login')!.dispatchEvent(new Event('submit'));
-    http.expectOne('/api/site/admin/check').flush(null);
+    const bad = http.expectOne('/api/admin/login');
+    expect(bad.request.body).toEqual({ username: '', password: '' });
+    bad.flush({ detail: 'Muitas tentativas erradas.' }, { status: 429, statusText: 'x' });
+    f.detectChanges();
+    expect(el.querySelector('.login .error')!.textContent).toContain('Muitas tentativas');
+
+    el.querySelector('form.login')!.dispatchEvent(new Event('submit'));
+    http.expectOne('/api/admin/login').flush({ token: 'tok', username: 'demonstração', demo: true, expiresInSeconds: 1 });
     const s = structuredClone(DEFAULT_SITE);
     s.store.name = 'PetLand';
     http.expectOne(SITE_API).flush({ version: 4, settings: s, updatedAt: '2026-11-20T10:00:00Z' });

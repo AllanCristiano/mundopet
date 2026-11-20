@@ -2,6 +2,7 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { from, switchMap } from 'rxjs';
 
+import { AdminLogin } from '../core/admin-login';
 import { AdminSession } from '../core/admin-session';
 import { ThemeToggle } from '../core/theme-toggle';
 import { BeautyApi } from './beauty.api';
@@ -27,7 +28,7 @@ const EMPTY_FORM: PhotoForm = { petName: '', species: 'CAO', service: 'BANHO_TOS
 /** /beleza/admin: a clinica envia fotos e modera depoimentos. */
 @Component({
   selector: 'app-beauty-admin',
-  imports: [RouterLink, ThemeToggle],
+  imports: [RouterLink, ThemeToggle, AdminLogin],
   templateUrl: './beauty-admin.html',
   styleUrl: './beauty-admin.scss',
 })
@@ -44,9 +45,6 @@ export class BeautyAdmin {
 
   // ---------- acesso ----------
   readonly token = this.session.token;
-  readonly tokenInput = signal('');
-  readonly checking = signal(false);
-  readonly loginError = this.session.notice;
   readonly tab = signal<'photos' | 'testimonials'>('photos');
 
   // ---------- fotos ----------
@@ -74,25 +72,6 @@ export class BeautyAdmin {
   }
 
   // ---------- acesso ----------
-
-  login(e: Event): void {
-    e.preventDefault();
-    const token = this.tokenInput().trim();
-    if (!token || this.checking()) return;
-    this.checking.set(true);
-    this.loginError.set(null);
-    this.session.login(token).subscribe({
-      next: () => {
-        this.checking.set(false);
-        this.tokenInput.set('');
-        this.loadAll();
-      },
-      error: (err: Error) => {
-        this.checking.set(false);
-        this.loginError.set(err.message);
-      },
-    });
-  }
 
   logout(notice: string | null = null): void {
     this.session.logout(notice);

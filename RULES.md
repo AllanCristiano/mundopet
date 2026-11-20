@@ -104,7 +104,7 @@ Estas regras são **obrigatórias**. Um PR que viole qualquer item marcado com *
 
 6.3 `/actuator/*` não é exposto pelo nginx (só `/health`).
 
-6.4 **[BLOQUEANTE]** Rotas administrativas (`/api/**/admin/**`) passam pelo `AdminGuard` (token `ADMIN_TOKEN`, ≥ 24 caracteres, comparação em tempo constante) **antes** de ler o corpo da requisição. Sem token configurado, a área fica desligada.
+6.4 **[BLOQUEANTE]** Rotas administrativas (`/api/**/admin/**`) passam pelo `AdminGuard` **antes** de ler o corpo da requisição: sessão criada por login e senha (Redis, só o hash do token, expira), tentativas erradas limitadas por IP, comparações em tempo constante. `ADMIN_DEMO=true` (login em branco) é **só para demonstração** e nunca vai para produção.
 
 6.5 **[BLOQUEANTE]** Imagem enviada por usuário nunca é guardada como veio: conferir a assinatura do arquivo (não o content-type), recusar resolução absurda antes de decodificar e **re-codificar** (remove EXIF/GPS). O navegador nunca acessa o MinIO direto; a API serve os arquivos.
 

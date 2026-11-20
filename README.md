@@ -94,9 +94,21 @@ como uma mensagem formatada (itens, quantidade, preço unitário "de/por", subto
   localizar o CEP, a taxa vai como "a combinar". Configure no `.env`: `STORE_LAT`, `STORE_LNG`,
   `DELIVERY_PRICE_PER_KM`, `DELIVERY_MAX_KM`, `DELIVERY_ROAD_FACTOR`.
 
+## Login da área administrativa (`/gestao` e `/beleza/admin`)
+
+Login e senha do dono no `.env`: `ADMIN_USER` e `ADMIN_PASSWORD` (mínimo 8 caracteres). Entrar abre uma **sessão**
+(guardada no Redis, vale para todas as réplicas, expira em 8 h; "Sair" encerra na hora). Depois de 10 tentativas
+erradas, o IP espera 15 minutos.
+
+**Modo demonstração:** com `ADMIN_DEMO=true`, login e senha **em branco** também entram (a tela mostra o aviso
+"Modo demonstração"). A senha de verdade continua funcionando. **Em produção use `ADMIN_DEMO=false`** — senão
+qualquer pessoa entra na gestão. O `.env` local desta máquina está com o modo demonstração ligado.
+
+`ADMIN_TOKEN` (opcional, ≥ 24 caracteres) é um token fixo para scripts e automações (header `X-Admin-Token`).
+
 ## Gestão do site (`/gestao`)
 
-Página do dono para personalizar o site **sem programador e sem deploy** (mesmo token `ADMIN_TOKEN` da área da clínica):
+Página do dono para personalizar o site **sem programador e sem deploy** (mesmo login da área da clínica):
 
 | Seção | O que muda |
 |---|---|
@@ -120,8 +132,7 @@ Galeria de fotos dos pets atendidos (banho, tosa, hidratação, spa) com filtro 
 (setas, teclado e arrastar no celular), mais os **depoimentos** dos tutores com nota média. A landing mostra uma
 vitrine com as últimas fotos e depoimentos.
 
-**Área da clínica: `/beleza/admin`** (não aparece no menu). Entra com o token `ADMIN_TOKEN` do `.env`
-(mínimo 24 caracteres; gere com `openssl rand -hex 24`). Sem token configurado, a área fica desligada.
+**Área da clínica: `/beleza/admin`** (não aparece no menu). Entra com o mesmo login da gestão (veja abaixo).
 - **Fotos:** escolhe a foto no celular → preenche nome do pet, espécie e serviço → publica. A foto é reduzida no
   navegador (sobe rápido no 4G) e o servidor **valida e reprocessa**: só aceita JPG/PNG de verdade, recusa imagens
   gigantes, gera versão grande (1600 px) e miniatura (600 px) e **remove os metadados** (EXIF com GPS do celular).

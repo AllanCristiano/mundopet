@@ -14,21 +14,7 @@
 
 @if (!session.token()) {
   <main class="container">
-    <form class="login card" (submit)="login($event)">
-      <span class="lock" aria-hidden="true">🔐</span>
-      <h1>Gestão do <em>site</em></h1>
-      <p class="muted">Aqui você troca os dados da loja, os textos da página inicial, os serviços, os números e a taxa de entrega. Entre com o token de acesso (<code>ADMIN_TOKEN</code>).</p>
-      <label>
-        <span>Token de acesso</span>
-        <input type="password" name="token" autocomplete="current-password" [value]="tokenInput()" (input)="tokenInput.set(val($event))" />
-      </label>
-      @if (session.notice()) {
-        <p class="error" role="alert">{{ session.notice() }}</p>
-      }
-      <button type="submit" class="btn btn--gold" [disabled]="!tokenInput().trim() || checking()">
-        {{ checking() ? 'Conferindo…' : 'Entrar' }}
-      </button>
-    </form>
+    <app-admin-login title="Gestão do" highlight="site" subtitle="Troque dados da loja, textos, serviços, números e a taxa de entrega." (done)="reload()" />
   </main>
 } @else {
   <div class="layout container">

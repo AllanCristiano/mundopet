@@ -79,7 +79,13 @@ mundopet:
     timeout: 3s
     cache-ttl: 30d
   admin:
-    # Token da area da clinica (enviar fotos, aprovar depoimentos). Vazio = area desligada. Minimo 24 caracteres.
+    # Login da gestao do site e da area da clinica. Sem senha e sem demo = area desligada.
+    username: ${ADMIN_USER:admin}
+    password: ${ADMIN_PASSWORD:}
+    # true = login e senha em branco tambem entram (SO PARA DEMONSTRACAO)
+    demo: ${ADMIN_DEMO:false}
+    session-ttl: 8h
+    # Opcional: token fixo para scripts/automacao (minimo 24 caracteres)
     token: ${ADMIN_TOKEN:}
   delivery:
     # Taxa de entrega = km ate a loja x preco por km (km = linha reta x road-factor, arredondado p/ cima em 0,1)

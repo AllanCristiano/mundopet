@@ -13,21 +13,7 @@
 
 <main class="container">
   @if (!token()) {
-    <form class="login card" (submit)="login($event)">
-      <span class="lock" aria-hidden="true">🔐</span>
-      <h1>Área da <em>clínica</em></h1>
-      <p class="muted">Para enviar fotos e aprovar depoimentos, informe o token de acesso (configurado em <code>ADMIN_TOKEN</code>).</p>
-      <label>
-        <span>Token de acesso</span>
-        <input type="password" name="token" autocomplete="current-password" [value]="tokenInput()" (input)="tokenInput.set(val($event))" />
-      </label>
-      @if (loginError()) {
-        <p class="error" role="alert">{{ loginError() }}</p>
-      }
-      <button type="submit" class="btn btn--gold" [disabled]="!tokenInput().trim() || checking()">
-        {{ checking() ? 'Conferindo…' : 'Entrar' }}
-      </button>
-    </form>
+    <app-admin-login title="Área da" highlight="clínica" subtitle="Envie fotos dos pets e aprove os depoimentos." (done)="loadAll()" />
   } @else {
     <h1 class="title">Espaço <em>Beleza</em></h1>
 
