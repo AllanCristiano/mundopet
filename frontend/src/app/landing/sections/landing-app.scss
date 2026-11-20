@@ -64,71 +64,265 @@
   z-index: 2;
 }
 
-// Tela do app (fiel ao app Flutter: Material 3, verde-dourado)
+// Tela do app (fiel ao app Flutter: fundo noite, dourado, titulos serifados e abas embaixo).
+// As 3 telas (Inicio, Racoes, Beleza) se revezam em loop; so opacity/transform.
 .screen {
+  --cycle: 9s;
   position: relative;
   height: 100%;
   overflow: hidden;
   border-radius: 30px;
-  background: #fbf8f3;
-  color: #1d1712;
-  font-size: 12px;
+  background:
+    radial-gradient(ellipse at 90% 8%, rgba(227, 176, 98, 0.2), transparent 45%),
+    #0b0908;
+  color: #f5eee4;
+  font-size: 10px;
+  line-height: 1.35;
 
-  .bar {
-    padding: 44px 16px 14px;
-    background: #e9f0e4;
-    font-size: 15px;
-    font-weight: 600;
-  }
-
-  ul {
-    list-style: none;
-    margin: 0;
-    padding: 6px 0;
-  }
-
-  li {
+  .top {
     display: flex;
     align-items: center;
-    gap: 10px;
-    padding: 10px 14px;
-    opacity: 0;
-    transform: translateX(-20px);
-    animation: item-in 0.6s var(--ease-out) forwards;
-    animation-delay: calc(0.6s + var(--i) * 0.15s);
+    justify-content: space-between;
+    padding: 42px 14px 10px;
+    border-bottom: 1px solid rgba(245, 238, 228, 0.12);
+    font-family: var(--font-display);
+    font-size: 10.5px;
+    letter-spacing: 0.3em;
+
+    i {
+      font-style: normal;
+      color: #e3b062;
+    }
   }
 
-  .avatar {
+  .dots {
+    display: flex;
+    gap: 6px;
+
+    b {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      border: 1.5px solid #e3b062;
+    }
+  }
+
+  em {
+    color: #e3b062;
+  }
+
+  .pink {
+    color: #f4a9c6;
+  }
+}
+
+.view {
+  position: absolute;
+  inset: 72px 14px 58px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  opacity: 0;
+  animation: view var(--cycle) var(--ease-out) infinite both;
+
+  &.v2 {
+    animation-delay: calc(var(--cycle) / 3);
+  }
+
+  &.v3 {
+    animation-delay: calc(var(--cycle) * 2 / 3);
+  }
+
+  .k {
+    font-size: 7.5px;
+    font-weight: 600;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: #e3b062;
+
+    &--beauty {
+      color: #f4a9c6;
+    }
+  }
+
+  .h {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: 19px;
+    line-height: 1.12;
+  }
+}
+
+.cta,
+.cart {
+  align-self: flex-start;
+  padding: 7px 12px;
+  border-radius: 99px;
+  background: #e3b062;
+  color: #1a1208;
+  font-weight: 700;
+  font-size: 9.5px;
+}
+
+.ship {
+  display: flex;
+  justify-content: space-between;
+  padding: 7px 8px;
+  border: 1px dashed rgba(227, 176, 98, 0.5);
+  border-radius: 10px;
+  color: #b3a797;
+  font-size: 8.5px;
+
+  b {
+    color: #f5eee4;
+  }
+}
+
+.cart {
+  align-self: stretch;
+  margin-top: auto;
+  text-align: center;
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  margin-top: 4px;
+
+  span {
+    padding: 8px;
+    border: 1px solid rgba(245, 238, 228, 0.12);
+    border-radius: 10px;
+    background: #15110d;
+  }
+
+  strong {
+    display: block;
+    font-family: var(--font-display);
+    font-size: 15px;
+    font-weight: 500;
+    color: #e3b062;
+  }
+
+  small {
+    color: #b3a797;
+    font-size: 8px;
+  }
+}
+
+.food {
+  display: flex;
+  gap: 8px;
+  overflow: hidden;
+  border: 1px solid rgba(245, 238, 228, 0.12);
+  border-radius: 12px;
+  background: #15110d;
+
+  .bag {
     display: grid;
     place-items: center;
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    background: hsl(var(--h) 60% 85%);
-    font-size: 14px;
+    flex: none;
+    width: 46px;
+    background: linear-gradient(var(--c), color-mix(in srgb, var(--c) 65%, #000));
   }
 
-  strong,
+  > span:last-child {
+    display: grid;
+    padding: 7px 6px 7px 0;
+  }
+
+  small {
+    font-size: 7px;
+    letter-spacing: 0.14em;
+    color: #e3b062;
+  }
+
+  b {
+    font-family: var(--font-display);
+    font-size: 13px;
+    font-weight: 500;
+  }
+}
+
+.gallery {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+
+  span {
+    display: grid;
+    place-items: center;
+    aspect-ratio: 1.15;
+    border-radius: 10px;
+    background: linear-gradient(160deg, hsl(var(--h) 55% 42%), hsl(var(--h) 45% 22%));
+    position: relative;
+  }
+
+  i {
+    font-style: normal;
+    font-size: 20px;
+  }
+
+  small {
+    position: absolute;
+    left: 6px;
+    bottom: 4px;
+    font-weight: 700;
+    font-size: 8px;
+  }
+}
+
+.quote {
+  margin: 0;
+  padding: 8px;
+  border: 1px solid rgba(245, 238, 228, 0.12);
+  border-radius: 10px;
+  font-family: var(--font-display);
+  font-style: italic;
+
   small {
     display: block;
+    font-style: normal;
+    color: #e3b062;
+    letter-spacing: 0.1em;
   }
+}
 
-  small {
-    color: #6b5f52;
-  }
+.tabs {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  padding: 8px 6px 14px;
+  background: #15110d;
+  font-size: 8px;
+  text-align: center;
 
-  .fab {
-    position: absolute;
-    right: 16px;
-    bottom: 18px;
+  span {
+    position: relative;
+    z-index: 1;
     display: grid;
-    place-items: center;
-    width: 46px;
-    height: 46px;
-    border-radius: 14px;
-    background: #cfe3c3;
-    font-size: 22px;
-    animation: pop 2.4s ease-in-out infinite;
+    gap: 2px;
+  }
+
+  i {
+    font-style: normal;
+    font-size: 12px;
+  }
+
+  // indicador da aba ativa acompanha a tela que esta aparecendo
+  .pill {
+    position: absolute;
+    top: 6px;
+    left: 6px;
+    width: calc((100% - 12px) / 4);
+    height: 22px;
+    border-radius: 99px;
+    background: rgba(227, 176, 98, 0.25);
+    animation: pill var(--cycle) var(--ease-out) infinite;
   }
 }
 
@@ -144,15 +338,15 @@
   box-shadow: 0 10px 30px -12px rgba(0, 0, 0, 0.4);
   animation: hover 5s ease-in-out infinite;
 
-  // na area vazia abaixo da lista, sem cobrir conteudo do app
+  // fora da tela do celular (acima e abaixo), sem cobrir o conteudo do app
   &.c1 {
-    top: 56%;
-    left: -14%;
+    top: -5%;
+    left: -12%;
   }
 
   &.c2 {
-    bottom: 16%;
-    right: -18%;
+    bottom: -5%;
+    right: -14%;
     animation-delay: -2.5s;
   }
 }
@@ -167,6 +361,42 @@ h2 {
   color: var(--muted);
   max-width: 44ch;
   margin: 0 0 24px;
+}
+
+.features {
+  display: grid;
+  gap: 14px;
+  list-style: none;
+  padding: 0;
+  margin: 0 0 30px;
+
+  li {
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+  }
+
+  .ico {
+    display: grid;
+    place-items: center;
+    flex: none;
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    border: 1px solid var(--line);
+    background: var(--bg-2);
+    color: var(--gold);
+  }
+
+  strong {
+    display: block;
+    color: var(--ink);
+  }
+
+  span:last-child {
+    color: var(--muted);
+    font-size: 0.92rem;
+  }
 }
 
 .steps {
@@ -301,16 +531,50 @@ h2 {
   }
 }
 
-@keyframes item-in {
-  to {
+@keyframes view {
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  4%,
+  30% {
     opacity: 1;
     transform: none;
   }
+  34%,
+  100% {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
 }
 
-@keyframes pop {
-  50% {
-    transform: scale(1.08);
+@keyframes pill {
+  0%,
+  30% {
+    transform: translateX(0);
+  }
+  34%,
+  63% {
+    transform: translateX(100%);
+  }
+  67%,
+  96% {
+    transform: translateX(200%);
+  }
+  100% {
+    transform: translateX(0);
+  }
+}
+
+// sem animacao: fica parado na tela inicial do app
+@media (prefers-reduced-motion: reduce) {
+  .view,
+  .tabs .pill {
+    animation: none;
+  }
+
+  .view.v1 {
+    opacity: 1;
   }
 }
 

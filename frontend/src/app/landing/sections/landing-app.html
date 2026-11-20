@@ -5,36 +5,77 @@
       <div class="phone" appReveal>
         <div class="notch"></div>
         <div class="screen">
-          <div class="bar">MundoPet</div>
-          <ul>
-            @for (p of mockPets; track p.name; let i = $index) {
-              <li [style.--i]="i">
-                <span class="avatar" [style.--h]="p.hue">🐾</span>
-                <span><strong>{{ p.name }}</strong><small>{{ p.info }}</small></span>
-              </li>
+          <div class="top"><span>MUNDO <i>✦</i> PET</span><span class="dots"><b></b><b></b></span></div>
+
+          <!-- 3 telas do app se revezando (Inicio, Racoes, Beleza), iguais ao app Flutter -->
+          <div class="view v1">
+            <small class="k">{{ hero().kicker }}</small>
+            <p class="h">{{ hero().title }} <em>{{ hero().highlight }}</em></p>
+            <span class="cta">Agendar visita</span>
+            <div class="stats">
+              @for (s of stats(); track s.label) {
+                <span><strong>{{ s.prefix }}{{ s.value }}{{ s.suffix }}</strong><small>{{ s.label }}</small></span>
+              }
+            </div>
+          </div>
+          <div class="view v2">
+            <small class="k">Loja de rações</small>
+            <p class="h">Nutrição que vira <em>energia</em></p>
+            @for (f of mockFoods; track f.name) {
+              <div class="food">
+                <span class="bag" [style.--c]="f.color">🐾</span>
+                <span><small>{{ f.brand }}</small><strong>{{ f.name }}</strong><b>{{ f.price }}</b></span>
+              </div>
             }
-          </ul>
-          <span class="fab">+</span>
+            <span class="ship">🛵 Entrega 3,4 km × R$ 2,00/km <b>R$ 6,80</b></span>
+            <span class="cart">🛍 2 itens · Ver pedido →</span>
+          </div>
+          <div class="view v3">
+            <small class="k k--beauty">Espaço Beleza</small>
+            <p class="h">Saíram do spa <em class="pink">irresistíveis</em></p>
+            <div class="gallery">
+              @for (g of mockGallery; track g.name) {
+                <span [style.--h]="g.hue"><i>{{ g.emoji }}</i><small>{{ g.name }}</small></span>
+              }
+            </div>
+            <p class="quote">“Voltou cheiroso e feliz!” <small>★★★★★</small></p>
+          </div>
+
+          <nav class="tabs">
+            @for (t of tabs; track t.label) {
+              <span><i>{{ t.icon }}</i>{{ t.label }}</span>
+            }
+            <b class="pill"></b>
+          </nav>
         </div>
       </div>
-      <span class="chip c1">Seus pets num só lugar</span>
-      <span class="chip c2">Leve e gratuito</span>
+      <span class="chip c1">Pedido direto no WhatsApp</span>
+      <span class="chip c2">Entrega calculada pelo CEP</span>
     </div>
 
     <div class="copy">
       <p class="kicker" appReveal>Aplicativo MundoPet</p>
       <h2 id="app-title" [appReveal]="100">O MundoPet no seu <em>bolso</em></h2>
       <p class="text" [appReveal]="200">
-        Tenha os seus pets sempre à mão, cadastre novos amigos em segundos e fale com a gente em um toque.
+        Tudo o que tem no site, no seu celular — no mesmo visual, com tema claro e escuro.
       </p>
+
+      <ul class="features">
+        @for (f of features; track f.title; let i = $index) {
+          <li [appReveal]="200 + i * 80">
+            <span class="ico" aria-hidden="true">{{ f.icon }}</span>
+            <span><strong>{{ f.title }}</strong>{{ f.text }}</span>
+          </li>
+        }
+      </ul>
 
       <ol class="steps">
         @for (s of steps; track s; let i = $index) {
-          <li [appReveal]="250 + i * 100"><span>{{ i + 1 }}</span>{{ s }}</li>
+          <li [appReveal]="550 + i * 100"><span>{{ i + 1 }}</span>{{ s }}</li>
         }
       </ol>
 
-      <div class="stores" [appReveal]="500">
+      <div class="stores" [appReveal]="800">
         <a
           class="store store--android"
           [class.is-ready]="download.state() === 'available'"
@@ -56,7 +97,7 @@
         </span>
       </div>
 
-      <p class="desktop-hint" [appReveal]="600">No computador? Abra esta página no seu celular Android para instalar.</p>
+      <p class="desktop-hint" [appReveal]="900">No computador? Abra esta página no seu celular Android para instalar.</p>
     </div>
   </div>
 </section>

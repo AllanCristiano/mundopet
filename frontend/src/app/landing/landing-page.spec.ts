@@ -6,7 +6,7 @@ import { TestBed } from '@angular/core/testing';
 import { HttpTestingController } from '@angular/common/http/testing';
 
 import { ANATOMY_LAYERS, CHAPTERS, NAV_LINKS, STATS } from './landing.data';
-import { SiteConfigService } from '../core/site-config';
+import { SiteConfigService, SiteSettings } from '../core/site-config';
 import { LandingPage } from './landing-page';
 import { APK_URL, AppDownloadService } from '../core/app-download.service';
 import { LandingApp } from './sections/landing-app';
@@ -164,6 +164,23 @@ describe('LandingPage', () => {
       expect(a.hasAttribute('href')).toBeFalse();
       expect(a.getAttribute('aria-disabled')).toBe('true');
       expect(a.textContent).toContain('em breve');
+    });
+
+    it('mostra as telas do app com o titulo e os numeros da gestao e o que o app faz', async () => {
+      const site = TestBed.inject(SiteConfigService);
+      site.apply({
+        version: 1,
+        updatedAt: null,
+        settings: { hero: { kicker: 'K', title: 'Seu pet', highlight: 'feliz', subtitle: 's' } } as Partial<SiteSettings> as SiteSettings,
+      });
+      const el = await renderWith('available');
+      expect(el.querySelector('.v1 .h')!.textContent).toContain('Seu pet feliz');
+      expect(el.querySelectorAll('.v1 .stats span').length).toBe(4);
+      expect(el.querySelector('.v1 .stats')!.textContent).toContain('15.000');
+      expect(el.querySelectorAll('.view').length).toBe(3);
+      expect(el.querySelectorAll('.tabs span').length).toBe(4);
+      const features = Array.from(el.querySelectorAll('.features strong')).map((s) => s.textContent);
+      expect(features).toEqual(['Loja de rações', 'Espaço Beleza', 'Atendimento', 'Seus pets']);
     });
 
     it('mostra "verificando" enquanto confere', () => {
