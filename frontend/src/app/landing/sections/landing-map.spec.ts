@@ -73,6 +73,11 @@ describe('LandingFooter', () => {
     expect(el.querySelector('a.up')!.getAttribute('href')).toBe('#topo');
   });
 
+  it('tem acesso discreto a gestao do site e a area da clinica', () => {
+    const links = Array.from(render().querySelectorAll('nav.staff a')).map((a) => a.getAttribute('href'));
+    expect(links).toEqual(['/gestao', '/beleza/admin']);
+  });
+
   it('redes sociais com rotulo acessivel e noopener', () => {
     const social = render().querySelectorAll<HTMLAnchorElement>('.social a[target="_blank"]');
     expect(social.length).toBe(2);

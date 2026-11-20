@@ -179,6 +179,34 @@ p {
   border-radius: 999px;
 }
 
+.staff {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+
+  a {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 44px;
+    padding: 0 16px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    transition:
+      color 0.3s,
+      border-color 0.3s;
+
+    &:hover {
+      border-color: var(--gold);
+    }
+  }
+
+  .gestao span {
+    color: var(--gold);
+  }
+}
+
 // ---------- Desktop ----------
 @media (min-width: 900px) {
   .footer {
