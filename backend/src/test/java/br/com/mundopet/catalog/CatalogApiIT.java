@@ -118,7 +118,7 @@ class CatalogApiIT extends IntegrationTestBase {
         Map<String, Object> body = Map.of(
                 "items", List.of(Map.of("productId", promo.id(), "quantity", 2), Map.of("productId", regular.id(), "quantity", 1)),
                 "customerName", "Ana",
-                "fulfillment", "DELIVERY",
+                "fulfillment", "PICKUP",
                 "notes", "Portão azul");
 
         Map<String, Object> res = web.post().uri("/api/catalog/cart/quote").contentType(MediaType.APPLICATION_JSON)
@@ -132,7 +132,35 @@ class CatalogApiIT extends IntegrationTestBase {
         assertThat(res.get("itemsCount")).isEqualTo(3);
         assertThat((String) res.get("whatsappText"))
                 .contains("PEDIDO DE RAÇÕES").contains(promo.sku()).contains(regular.sku())
-                .contains("Sou *Ana*").contains("Entrega").contains("Portão azul").contains("TOTAL:");
+                .contains("Sou *Ana*").contains("Retirada na loja").contains("Portão azul").contains("TOTAL:");
+    }
+
+    @Test
+    void deliveryRequiresValidAddressAndPutsItInTheMessage() {
+        Item item = get("sort=NAME&pageSize=48").items().stream().filter(Item::inStock).findFirst().orElseThrow();
+        Map<String, Object> address = new java.util.HashMap<>(Map.of(
+                "cep", "01001-000", "street", "Praça da Sé", "number", "100", "district", "Sé",
+                "city", "São Paulo", "state", "SP", "complement", "Sala 3"));
+        Map<String, Object> body = new java.util.HashMap<>(Map.of(
+                "items", List.of(Map.of("productId", item.id(), "quantity", 1)), "fulfillment", "DELIVERY", "address", address));
+
+        web.post().uri("/api/catalog/cart/quote").contentType(MediaType.APPLICATION_JSON).bodyValue(body).exchange()
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.whatsappText").value(t -> assertThat((String) t)
+                        .contains("📍 Praça da Sé, 100 - Sala 3").contains("CEP 01001-000").contains("google.com/maps"));
+
+        // sem endereco, sem numero, CEP ou UF invalidos => 400
+        body.remove("address");
+        web.post().uri("/api/catalog/cart/quote").contentType(MediaType.APPLICATION_JSON).bodyValue(body).exchange()
+                .expectStatus().isBadRequest();
+        for (var bad : List.of(Map.of("number", ""), Map.of("cep", "123"), Map.of("state", "São Paulo"))) {
+            Map<String, Object> a = new java.util.HashMap<>(address);
+            a.putAll(bad);
+            body.put("address", a);
+            web.post().uri("/api/catalog/cart/quote").contentType(MediaType.APPLICATION_JSON).bodyValue(body).exchange()
+                    .expectStatus().isBadRequest();
+        }
     }
 
     @Test

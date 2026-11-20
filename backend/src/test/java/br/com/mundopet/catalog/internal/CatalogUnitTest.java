@@ -129,6 +129,42 @@ class CatalogUnitTest {
     }
 
     @Test
+    void deliveryMessageHasAddressBlockAndMapsLink() {
+        var line = new CartQuote.Line(UUID.randomUUID(), "X", "Ração X", "M", BigDecimal.ONE, 1, BigDecimal.TEN, BigDecimal.TEN,
+                BigDecimal.TEN, false, null);
+        var address = new CartQuote.DeliveryAddress("01001-000", "Praça da Sé", "100", "Apto *12*", "Sé", "São Paulo", "sp",
+                "Perto da\ncatedral");
+        String text = new WhatsAppMessageFormatter().format(List.of(line), 1, BigDecimal.TEN, BigDecimal.ZERO, BigDecimal.TEN,
+                null, Fulfillment.DELIVERY, null, address);
+        assertThat(text)
+                .contains("🛵 *Entrega no endereço:*")
+                .contains("📍 Praça da Sé, 100 - Apto 12")
+                .contains("Sé · São Paulo/SP")
+                .contains("CEP 01001-000")
+                .contains("Ref.: Perto da catedral")
+                .contains("🗺️ https://www.google.com/maps/search/?api=1&query=Pra%C3%A7a+da+S%C3%A9%2C+100%2C+S%C3%A9")
+                .doesNotContain("vou enviar o endereço");
+    }
+
+    @Test
+    void deliveryWithoutAddressIsRejected() {
+        var req = new CartQuote.Request(List.of(new CartQuote.Item(UUID.randomUUID(), 1)), null, Fulfillment.DELIVERY, null);
+        StepVerifier.create(service.quote(req)).expectError(IllegalArgumentException.class).verify();
+        verify(repo, never()).findByIds(any());
+    }
+
+    @Test
+    void addressIsIgnoredForPickup() {
+        Product a = product("A", "10.00", null, 5);
+        when(repo.findByIds(any())).thenReturn(Flux.just(a));
+        var address = new CartQuote.DeliveryAddress("01001-000", "Rua X", "1", null, "B", "C", "SP", null);
+        var req = new CartQuote.Request(List.of(new CartQuote.Item(a.id(), 1)), null, Fulfillment.PICKUP, null, address);
+        StepVerifier.create(service.quote(req))
+                .assertNext(r -> assertThat(r.whatsappText()).contains("Retirada na loja").doesNotContain("Rua X"))
+                .verifyComplete();
+    }
+
+    @Test
     void numbersAfterNineArePlain() {
         assertThat(WhatsAppMessageFormatter.number(3)).isEqualTo("3️⃣");
         assertThat(WhatsAppMessageFormatter.number(12)).isEqualTo("12.");

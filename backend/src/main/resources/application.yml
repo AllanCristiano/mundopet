@@ -72,6 +72,12 @@ mundopet:
     job-timeout: 30s
     status-ttl: 1d
     worker-enabled: ${QUEUE_WORKER_ENABLED:true}
+  address:
+    # Consulta de CEP: tenta na ordem; o resultado fica em cache no Redis
+    viacep-url: ${VIACEP_URL:https://viacep.com.br/ws}
+    brasilapi-url: ${BRASILAPI_URL:https://brasilapi.com.br/api/cep/v1}
+    timeout: 3s
+    cache-ttl: 30d
   minio:
     endpoint: ${MINIO_ENDPOINT:http://localhost:9000}
     access-key: ${MINIO_ACCESS_KEY:mundopet}

@@ -1,6 +1,8 @@
 package br.com.mundopet.catalog.internal;
 
 import java.math.BigDecimal;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.text.NumberFormat;
 import java.util.List;
 import java.util.Locale;
@@ -21,6 +23,12 @@ class WhatsAppMessageFormatter {
 
     String format(List<CartQuote.Line> lines, int itemsCount, BigDecimal subtotal, BigDecimal discount,
                   BigDecimal total, String customerName, Fulfillment fulfillment, String notes) {
+        return format(lines, itemsCount, subtotal, discount, total, customerName, fulfillment, notes, null);
+    }
+
+    String format(List<CartQuote.Line> lines, int itemsCount, BigDecimal subtotal, BigDecimal discount,
+                  BigDecimal total, String customerName, Fulfillment fulfillment, String notes,
+                  CartQuote.DeliveryAddress address) {
         StringBuilder sb = new StringBuilder();
         sb.append("🐾 *MUNDOPET · PEDIDO DE RAÇÕES*\n");
         String name = clean(customerName);
@@ -53,13 +61,38 @@ class WhatsAppMessageFormatter {
         sb.append("✅ *TOTAL: ").append(money(total)).append("*\n");
         sb.append(DIVIDER).append('\n');
 
-        sb.append(fulfillment == Fulfillment.DELIVERY ? "🛵 *Entrega* (vou enviar o endereço)\n" : "🏬 *Retirada na loja*\n");
+        if (fulfillment == Fulfillment.DELIVERY && address != null) {
+            appendAddress(sb, address);
+        } else if (fulfillment == Fulfillment.DELIVERY) {
+            sb.append("🛵 *Entrega* (vou enviar o endereço)\n");
+        } else {
+            sb.append("🏬 *Retirada na loja*\n");
+        }
         String obs = notes == null ? "" : notes.strip();
         if (!obs.isEmpty()) {
             sb.append("📝 Obs.: ").append(obs).append('\n');
         }
         sb.append('\n').append("_Pedido montado pelo site. Valores e estoque sujeitos à confirmação da loja._");
         return sb.toString();
+    }
+
+    /** Bloco de endereco + link do Google Maps para o entregador abrir direto. */
+    static void appendAddress(StringBuilder sb, CartQuote.DeliveryAddress a) {
+        String street = clean(a.street()) + ", " + clean(a.number());
+        String complement = clean(a.complement());
+        String state = clean(a.state()).toUpperCase();
+        String cep = clean(a.cep());
+        sb.append("🛵 *Entrega no endereço:*\n");
+        sb.append("📍 ").append(street).append(complement.isEmpty() ? "" : " - " + complement).append('\n');
+        sb.append("     ").append(clean(a.district())).append(" · ").append(clean(a.city())).append('/').append(state).append('\n');
+        sb.append("     CEP ").append(cep).append('\n');
+        String reference = clean(a.reference());
+        if (!reference.isEmpty()) {
+            sb.append("     Ref.: ").append(reference).append('\n');
+        }
+        String query = street + ", " + clean(a.district()) + ", " + clean(a.city()) + " - " + state + ", " + cep;
+        sb.append("🗺️ https://www.google.com/maps/search/?api=1&query=")
+                .append(URLEncoder.encode(query, StandardCharsets.UTF_8)).append('\n');
     }
 
     static String money(BigDecimal value) {

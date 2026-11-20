@@ -1,0 +1,234 @@
+// Mobile first: campos em 2 colunas onde cabe (numero ao lado do "sem numero", cidade ao lado da UF).
+
+:host {
+  display: block;
+  animation: open 0.45s var(--ease-out);
+}
+
+.address {
+  margin: 0;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  min-width: 0;
+  transition:
+    border-color 0.4s,
+    box-shadow 0.4s;
+
+  &.flash {
+    border-color: #3ecf8e;
+    box-shadow: 0 0 0 4px color-mix(in srgb, #3ecf8e 18%, transparent);
+
+    .street input,
+    .district input,
+    .city input,
+    .uf select {
+      animation: filled 1.2s var(--ease-out);
+    }
+  }
+}
+
+legend {
+  padding: 0 6px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--gold);
+}
+
+.field {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+  font-size: 0.82rem;
+
+  small {
+    color: var(--muted);
+  }
+}
+
+input[type='text'],
+select {
+  width: 100%;
+  min-height: 46px;
+  padding: 0 12px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--bg-2);
+  color: var(--ink);
+  font: inherit;
+  font-size: 16px; // evita zoom automatico no iPhone
+  transition: border-color 0.25s;
+
+  &:focus {
+    border-color: var(--gold);
+    outline: none;
+  }
+
+  &:disabled {
+    opacity: 0.6;
+  }
+}
+
+.cep-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+}
+
+.cep {
+  flex: 0 0 150px;
+}
+
+.cep-input {
+  position: relative;
+
+  input {
+    padding-right: 38px;
+    letter-spacing: 0.08em;
+  }
+
+  .status {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    translate: 0 -50%;
+    display: grid;
+    place-items: center;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    font-size: 0.8rem;
+    font-weight: 700;
+  }
+
+  &[data-state='found'] {
+    input {
+      border-color: #3ecf8e;
+    }
+
+    .status {
+      background: #3ecf8e;
+      color: #08280f;
+      animation: pop 0.4s var(--ease-out);
+    }
+  }
+
+  &[data-state='not-found'],
+  &[data-state='error'] {
+    input {
+      border-color: #e0a030;
+    }
+
+    .status {
+      background: #e0a030;
+      color: #1a1208;
+    }
+  }
+}
+
+.spin {
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--line);
+  border-top-color: var(--gold);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+.dont-know {
+  display: inline-flex;
+  align-items: center;
+  min-height: 46px;
+  font-size: 0.8rem;
+  color: var(--gold);
+}
+
+.msg {
+  min-height: 1.2em;
+  margin: 8px 0 4px;
+  font-size: 0.8rem;
+  color: var(--muted);
+
+  &[data-state='found'] {
+    color: #3ecf8e;
+  }
+
+  &[data-state='not-found'],
+  &[data-state='error'] {
+    color: #e0a030;
+  }
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 4px;
+}
+
+.street,
+.complement,
+.district,
+.reference {
+  grid-column: 1 / -1;
+}
+
+.city {
+  grid-column: 1;
+}
+
+.no-number {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  align-self: end;
+  min-height: 46px;
+  font-size: 0.82rem;
+  cursor: pointer;
+
+  input {
+    width: 20px;
+    height: 20px;
+    accent-color: var(--gold);
+  }
+}
+
+@media (min-width: 900px) {
+  .grid {
+    grid-template-columns: 2fr 1fr;
+  }
+
+  .district {
+    grid-column: 1 / -1;
+  }
+}
+
+@keyframes open {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+}
+
+@keyframes filled {
+  0% {
+    background: color-mix(in srgb, #3ecf8e 22%, var(--bg-2));
+  }
+}
+
+@keyframes pop {
+  0% {
+    transform: scale(0.3);
+  }
+  60% {
+    transform: scale(1.2);
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

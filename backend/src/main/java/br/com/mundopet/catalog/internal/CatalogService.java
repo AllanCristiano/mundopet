@@ -45,6 +45,9 @@ class CatalogService {
     }
 
     private Mono<CartQuote.Response> priced(CartQuote.Request request) {
+        if (request.fulfillment() == CatalogEnums.Fulfillment.DELIVERY && request.address() == null) {
+            return Mono.error(new IllegalArgumentException("Informe o endereço de entrega"));
+        }
         Map<UUID, Integer> quantities = new LinkedHashMap<>();
         for (CartQuote.Item item : request.items()) {
             int merged = quantities.merge(item.productId(), item.quantity(), Integer::sum);
@@ -85,7 +88,7 @@ class CatalogService {
         BigDecimal discount = subtotal.subtract(total);
         String text = lines.isEmpty() ? null
                 : formatter.format(lines, count, subtotal, discount, total, request.customerName(), request.fulfillment(),
-                        request.notes());
+                        request.notes(), request.fulfillment() == CatalogEnums.Fulfillment.DELIVERY ? request.address() : null);
         return new CartQuote.Response(lines, unavailable, count, subtotal, discount, total, text);
     }
 

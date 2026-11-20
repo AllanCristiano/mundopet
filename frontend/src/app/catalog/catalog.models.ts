@@ -96,6 +96,16 @@ export interface QuoteRequest {
   customerName: string | null;
   fulfillment: Fulfillment;
   notes: string | null;
+  address?: {
+    cep: string;
+    street: string;
+    number: string;
+    complement: string | null;
+    district: string;
+    city: string;
+    state: string;
+    reference: string | null;
+  } | null;
 }
 
 // ---------------- Rotulos em portugues ----------------

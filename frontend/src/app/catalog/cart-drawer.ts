@@ -3,6 +3,8 @@ import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 import { catchError, combineLatest, debounceTime, filter, map, of, switchMap, tap } from 'rxjs';
 
 import { whatsappLink } from '../landing/landing.data';
+import { DeliveryAddress, isAddressValid, loadAddress, saveAddress, toApiAddress } from './address';
+import { AddressForm } from './address-form';
 import { BagArt } from './bag-art';
 import { CartStore, MAX_QTY } from './cart.store';
 import { CatalogApi } from './catalog.api';
@@ -11,7 +13,7 @@ import { whatsappToHtml } from './whatsapp-format';
 
 @Component({
   selector: 'app-cart-drawer',
-  imports: [BagArt],
+  imports: [BagArt, AddressForm],
   templateUrl: './cart-drawer.html',
   styleUrl: './cart-drawer.scss',
   host: { '[class.open]': 'cart.isOpen()', '(document:keydown.escape)': 'close()' },
@@ -23,6 +25,10 @@ export class CartDrawer {
   readonly customerName = signal('');
   readonly fulfillment = signal<Fulfillment>('PICKUP');
   readonly notes = signal('');
+  /** Endereco fica salvo no aparelho para a proxima compra. */
+  readonly address = signal<DeliveryAddress>(loadAddress());
+  readonly addressValid = computed(() => isAddressValid(this.address()));
+  readonly needsAddress = computed(() => this.fulfillment() === 'DELIVERY' && !this.addressValid());
   readonly showPreview = signal(false);
   readonly sent = signal(false);
 
@@ -35,13 +41,23 @@ export class CartDrawer {
   readonly kg = kg;
   readonly maxQty = MAX_QTY;
 
+  /** O pedido como o cliente quer enviar (com endereco na entrega). */
   readonly request = computed<QuoteRequest>(() => ({
     items: this.cart.lines().map((l) => ({ productId: l.id, quantity: l.qty })),
     customerName: this.customerName().trim() || null,
     fulfillment: this.fulfillment(),
     notes: this.notes().trim() || null,
+    address: this.fulfillment() === 'DELIVERY' && this.addressValid() ? toApiAddress(this.address()) : null,
   }));
   private readonly requestKey = computed(() => JSON.stringify(this.request()));
+
+  /**
+   * O que vai para o orcamento: enquanto o endereco esta incompleto, calcula so os totais (como retirada).
+   * Como a chave nao bate com o pedido real, o botao de envio continua bloqueado ate o endereco ficar completo.
+   */
+  private readonly quoteRequest = computed<QuoteRequest>(() =>
+    this.needsAddress() ? { ...this.request(), fulfillment: 'PICKUP', address: null } : this.request(),
+  );
 
   /** So deixa enviar se o orcamento corresponde exatamente ao carrinho atual. */
   readonly canSend = computed(
@@ -54,7 +70,7 @@ export class CartDrawer {
   });
 
   constructor() {
-    combineLatest([toObservable(this.request), toObservable(this.cart.isOpen)])
+    combineLatest([toObservable(this.quoteRequest), toObservable(this.cart.isOpen)])
       .pipe(
         filter(([req, open]) => open && req.items.length > 0),
         tap(() => this.quoting.set(true)),
@@ -75,6 +91,8 @@ export class CartDrawer {
         this.quoteError.set(error);
         this.quoting.set(false);
       });
+
+    effect(() => saveAddress(this.address()));
 
     // carrinho vazio: zera o orcamento
     effect(() => {

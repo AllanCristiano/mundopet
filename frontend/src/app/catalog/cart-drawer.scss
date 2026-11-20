@@ -338,6 +338,16 @@ button {
   }
 }
 
+.hint {
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: color-mix(in srgb, #e0a030 14%, transparent);
+  color: var(--ink);
+  font-size: 0.8rem;
+  animation: line-in 0.35s var(--ease-out);
+}
+
 .calc,
 .error {
   margin: 0;

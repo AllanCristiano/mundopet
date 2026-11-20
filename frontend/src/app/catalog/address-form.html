@@ -1,0 +1,83 @@
+@let a = address();
+<fieldset class="address" [class.flash]="flash()">
+  <legend>Endereço de entrega</legend>
+
+  <div class="cep-row">
+    <label class="field cep">
+      <span>CEP</span>
+      <div class="cep-input" [attr.data-state]="state()">
+        <input
+          #cepInput
+          type="text"
+          inputmode="numeric"
+          autocomplete="postal-code"
+          placeholder="00000-000"
+          maxlength="9"
+          [value]="a.cep"
+          (input)="onCep(cepInput.value, cepInput)"
+          [attr.aria-invalid]="state() === 'not-found'"
+          aria-describedby="cep-status"
+        />
+        <span class="status" aria-hidden="true">
+          @switch (state()) {
+            @case ('loading') { <i class="spin"></i> }
+            @case ('found') { ✓ }
+            @case ('not-found') { ! }
+            @case ('error') { ! }
+          }
+        </span>
+      </div>
+    </label>
+    <a class="dont-know" href="https://buscacepinter.correios.com.br/app/endereco/index.php" target="_blank" rel="noopener">Não sei meu CEP</a>
+  </div>
+
+  <p id="cep-status" class="msg" [attr.data-state]="state()" aria-live="polite">{{ message() }}</p>
+
+  <div class="grid">
+    <label class="field street">
+      <span>Rua / Avenida</span>
+      <input type="text" autocomplete="address-line1" maxlength="120" [value]="a.street" (input)="patch({ street: $any($event.target).value })" />
+    </label>
+
+    <label class="field number">
+      <span>Número</span>
+      <input #numberInput type="text" inputmode="numeric" autocomplete="address-line2" maxlength="10"
+             [value]="a.number" [disabled]="a.number === 'S/N'" (input)="patch({ number: $any($event.target).value })" />
+    </label>
+
+    <label class="no-number">
+      <input type="checkbox" [checked]="a.number === 'S/N'" (change)="toggleNoNumber($any($event.target).checked)" />
+      <span>Sem número</span>
+    </label>
+
+    <label class="field complement">
+      <span>Complemento <small>(opcional)</small></span>
+      <input type="text" placeholder="Apto, bloco, casa…" maxlength="60" [value]="a.complement" (input)="patch({ complement: $any($event.target).value })" />
+    </label>
+
+    <label class="field district">
+      <span>Bairro</span>
+      <input type="text" maxlength="80" [value]="a.district" (input)="patch({ district: $any($event.target).value })" />
+    </label>
+
+    <label class="field city">
+      <span>Cidade</span>
+      <input type="text" autocomplete="address-level2" maxlength="80" [value]="a.city" (input)="patch({ city: $any($event.target).value })" />
+    </label>
+
+    <label class="field uf">
+      <span>UF</span>
+      <select autocomplete="address-level1" (change)="patch({ state: $any($event.target).value })">
+        <option value="" [selected]="!a.state">--</option>
+        @for (uf of ufs; track uf) {
+          <option [value]="uf" [selected]="a.state === uf">{{ uf }}</option>
+        }
+      </select>
+    </label>
+
+    <label class="field reference">
+      <span>Ponto de referência <small>(opcional)</small></span>
+      <input type="text" maxlength="120" placeholder="Ex.: portão azul, ao lado da padaria" [value]="a.reference" (input)="patch({ reference: $any($event.target).value })" />
+    </label>
+  </div>
+</fieldset>

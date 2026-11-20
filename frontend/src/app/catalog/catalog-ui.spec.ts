@@ -188,7 +188,7 @@ describe('catalogo (UI)', () => {
       tick(400);
       http.expectOne(`${CATALOG_API}/cart/quote`).flush(quote);
       expect(f.componentInstance.canSend()).toBeTrue();
-      f.componentInstance.fulfillment.set('DELIVERY');
+      f.componentInstance.notes.set('troco para 100');
       f.detectChanges();
       expect(f.componentInstance.canSend()).toBeFalse();
       const open = spyOn(window, 'open');
@@ -201,6 +201,38 @@ describe('catalogo (UI)', () => {
       expect(cart.qtyOf('p2')).toBe(0);
       f.componentInstance.finish(false);
       expect(cart.count()).toBe(2);
+    }));
+
+    it('entrega: sem endereco completo nao envia; com endereco o pedido leva o endereco', fakeAsync(() => {
+      localStorage.removeItem('mundopet-address');
+      const { f, cart, el } = setup();
+      cart.isOpen.set(true);
+      f.componentInstance.fulfillment.set('DELIVERY');
+      f.detectChanges();
+      tick(400);
+      // so para calcular os totais (como retirada); envio bloqueado
+      const totals = http.expectOne(`${CATALOG_API}/cart/quote`);
+      expect(totals.request.body.fulfillment).toBe('PICKUP');
+      expect(totals.request.body.address).toBeNull();
+      totals.flush(quote);
+      f.detectChanges();
+      expect(el.querySelector('app-address-form')).not.toBeNull();
+      expect(el.querySelector('.hint')!.textContent).toContain('endereço de entrega');
+      expect(f.componentInstance.canSend()).toBeFalse();
+
+      f.componentInstance.address.set({ cep: '01001000', street: 'Praça da Sé', number: '100', complement: '', district: 'Sé',
+        city: 'São Paulo', state: 'SP', reference: '' });
+      f.detectChanges();
+      tick(400);
+      const full = http.expectOne(`${CATALOG_API}/cart/quote`);
+      expect(full.request.body.fulfillment).toBe('DELIVERY');
+      expect(full.request.body.address).toEqual(jasmine.objectContaining({ cep: '01001-000', number: '100', state: 'SP' }));
+      full.flush(quote);
+      f.detectChanges();
+      expect(f.componentInstance.canSend()).toBeTrue();
+      expect(el.querySelector('.hint')).toBeNull();
+      expect(JSON.parse(localStorage.getItem('mundopet-address')!).number).toBe('100');
+      localStorage.removeItem('mundopet-address');
     }));
 
     it('falha no orcamento: mostra erro e nao deixa enviar', fakeAsync(() => {

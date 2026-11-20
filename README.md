@@ -79,6 +79,9 @@ como uma mensagem formatada (itens, quantidade, preço unitário "de/por", subto
 - Produtos de exemplo (marcas fictícias) vêm de `backend/src/main/resources/db/seed/R__catalog_seed.sql`.
   Em produção use `FLYWAY_LOCATIONS=classpath:db/migration` e cadastre os produtos reais.
 - Número do WhatsApp: `WHATSAPP_PHONE` em `frontend/src/app/landing/landing.data.ts`.
+- **Entrega**: o cliente digita o CEP e o endereço é preenchido sozinho (`GET /api/address/cep/{cep}`:
+  ViaCEP → BrasilAPI de reserva, cache de 30 dias no Redis). Ele completa o número e pode corrigir qualquer campo.
+  O endereço vai na mensagem com link do Google Maps e fica salvo no aparelho para a próxima compra.
 
 ## Fila (chamadas assíncronas)
 
