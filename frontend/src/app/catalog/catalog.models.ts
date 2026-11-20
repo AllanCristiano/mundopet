@@ -87,8 +87,29 @@ export interface Quote {
   itemsCount: number;
   subtotal: number;
   discount: number;
+  /** Produtos (ja com descontos). */
+  itemsTotal: number;
+  deliveryFee: number;
+  /** Produtos + entrega. */
   total: number;
+  /** So vem quando o pedido e de entrega. */
+  delivery: DeliveryQuote | null;
+  /** Nulo quando nao da para enviar (ex.: fora da area de entrega). */
   whatsappText: string | null;
+}
+
+/** Taxa de entrega por distancia (preco fixo por km), calculada no servidor. */
+export interface DeliveryQuote {
+  status: 'OK' | 'OUT_OF_AREA' | 'UNKNOWN';
+  distanceKm: number | null;
+  fee: number | null;
+  pricePerKm: number;
+  maxKm: number;
+}
+
+/** 3.2 -> "3,2 km" */
+export function km(value: number | null | undefined): string {
+  return `${(value ?? 0).toLocaleString('pt-BR', { maximumFractionDigits: 1 })} km`;
 }
 
 export interface QuoteRequest {

@@ -10,6 +10,8 @@ import java.util.function.Function;
 
 import org.springframework.stereotype.Service;
 
+import br.com.mundopet.delivery.DeliveryCalculator;
+import br.com.mundopet.delivery.DeliveryQuote;
 import br.com.mundopet.shared.NotFoundException;
 import reactor.core.publisher.Mono;
 
@@ -18,10 +20,12 @@ class CatalogService {
 
     private final ProductRepository repository;
     private final WhatsAppMessageFormatter formatter;
+    private final DeliveryCalculator delivery;
 
-    CatalogService(ProductRepository repository, WhatsAppMessageFormatter formatter) {
+    CatalogService(ProductRepository repository, WhatsAppMessageFormatter formatter, DeliveryCalculator delivery) {
         this.repository = repository;
         this.formatter = formatter;
+        this.delivery = delivery;
     }
 
     Mono<ProductRepository.Page> search(ProductQuery query) {
@@ -56,12 +60,19 @@ class CatalogService {
             }
         }
 
+        boolean isDelivery = request.fulfillment() == CatalogEnums.Fulfillment.DELIVERY;
+        Mono<DeliveryQuote> fee = isDelivery ? delivery.quote(request.address().cep()) : Mono.just(NO_DELIVERY);
         return repository.findByIds(quantities.keySet())
                 .collectMap(Product::id, Function.identity())
-                .map(products -> build(request, quantities, products));
+                .zipWith(fee)
+                .map(t -> build(request, quantities, t.getT1(), isDelivery ? t.getT2() : null));
     }
 
-    private CartQuote.Response build(CartQuote.Request request, Map<UUID, Integer> quantities, Map<UUID, Product> products) {
+    /** Marcador interno para retirada (Mono.zip nao aceita vazio). */
+    private static final DeliveryQuote NO_DELIVERY = new DeliveryQuote(DeliveryQuote.Status.UNKNOWN, null, null, null, null);
+
+    private CartQuote.Response build(CartQuote.Request request, Map<UUID, Integer> quantities, Map<UUID, Product> products,
+                                     DeliveryQuote deliveryQuote) {
         List<CartQuote.Line> lines = new ArrayList<>();
         List<UUID> unavailable = new ArrayList<>();
         BigDecimal subtotal = BigDecimal.ZERO;
@@ -86,10 +97,13 @@ class CatalogService {
         }
 
         BigDecimal discount = subtotal.subtract(total);
-        String text = lines.isEmpty() ? null
-                : formatter.format(lines, count, subtotal, discount, total, request.customerName(), request.fulfillment(),
-                        request.notes(), request.fulfillment() == CatalogEnums.Fulfillment.DELIVERY ? request.address() : null);
-        return new CartQuote.Response(lines, unavailable, count, subtotal, discount, total, text);
+        BigDecimal fee = deliveryQuote != null && deliveryQuote.fee() != null ? deliveryQuote.fee() : BigDecimal.ZERO;
+        BigDecimal grandTotal = total.add(fee);
+        boolean canSend = !lines.isEmpty() && (deliveryQuote == null || deliveryQuote.deliverable());
+        String text = !canSend ? null
+                : formatter.format(lines, count, subtotal, discount, grandTotal, request.customerName(), request.fulfillment(),
+                        request.notes(), deliveryQuote == null ? null : request.address(), deliveryQuote);
+        return new CartQuote.Response(lines, unavailable, count, subtotal, discount, total, fee, grandTotal, deliveryQuote, text);
     }
 
 }

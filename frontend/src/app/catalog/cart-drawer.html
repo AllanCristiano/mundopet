@@ -109,10 +109,27 @@
             <div><dt>Subtotal</dt><dd>{{ money(q.subtotal) }}</dd></div>
             <div class="disc"><dt>Descontos</dt><dd>-{{ money(q.discount) }}</dd></div>
           }
+          @if (delivery(); as d) {
+            @if (d.status === 'OK') {
+              <div><dt>Produtos</dt><dd>{{ money(q.itemsTotal) }}</dd></div>
+              <div class="ship">
+                <dt>🛵 Entrega <small>{{ km(d.distanceKm) }} × {{ money(d.pricePerKm) }}/km</small></dt>
+                <dd>{{ money(d.fee ?? 0) }}</dd>
+              </div>
+            } @else if (d.status === 'UNKNOWN') {
+              <div class="ship"><dt>🛵 Entrega <small>a loja confirma pelo WhatsApp</small></dt><dd>a combinar</dd></div>
+            }
+          }
           <div class="tot"><dt>Total</dt><dd>{{ money(q.total) }}</dd></div>
         </dl>
       } @else {
         <p class="muted calc">Calculando total…</p>
+      }
+      @if (outOfArea(); as d) {
+        <p class="hint out" role="alert">
+          🚫 Esse endereço fica a <strong>{{ km(d.distanceKm) }}</strong> da loja e entregamos até <strong>{{ km(d.maxKm) }}</strong>.
+          <button type="button" (click)="fulfillment.set('PICKUP')">Retirar na loja</button>
+        </p>
       }
       @if (needsAddress()) {
         <p class="hint" role="status">📍 Preencha o endereço de entrega (CEP e número) para enviar o pedido.</p>

@@ -82,6 +82,12 @@ como uma mensagem formatada (itens, quantidade, preço unitário "de/por", subto
 - **Entrega**: o cliente digita o CEP e o endereço é preenchido sozinho (`GET /api/address/cep/{cep}`:
   ViaCEP → BrasilAPI de reserva, cache de 30 dias no Redis). Ele completa o número e pode corrigir qualquer campo.
   O endereço vai na mensagem com link do Google Maps e fica salvo no aparelho para a próxima compra.
+- **Taxa de entrega por distância** (módulo `delivery`): `km até a loja × preço fixo por km`, somada ao total e
+  mostrada no carrinho e na mensagem. O servidor localiza o CEP (AwesomeAPI → BrasilAPI v2, cache de 30 dias no Redis;
+  só o CEP sai do servidor), mede a distância em linha reta × `DELIVERY_ROAD_FACTOR` (aproxima o caminho pelas ruas)
+  e arredonda para cima em 0,1 km. Acima de `DELIVERY_MAX_KM` o envio é bloqueado (fora da área); se não der para
+  localizar o CEP, a taxa vai como "a combinar". Configure no `.env`: `STORE_LAT`, `STORE_LNG`,
+  `DELIVERY_PRICE_PER_KM`, `DELIVERY_MAX_KM`, `DELIVERY_ROAD_FACTOR`.
 
 ## Fila (chamadas assíncronas)
 

@@ -16,7 +16,12 @@ import org.testcontainers.utility.DockerImageName;
  * Regra do projeto: teste de integracao nunca usa mock de infraestrutura.
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@TestPropertySource(properties = "mundopet.rate-limit.requests-per-window=100000")
+// APIs de coordenadas apontam para uma porta fechada: os testes nunca dependem da internet
+// (sem coordenadas a taxa fica "a combinar"). O DeliveryFeeIT troca por servidores falsos.
+@TestPropertySource(properties = {
+        "mundopet.rate-limit.requests-per-window=100000",
+        "mundopet.delivery.awesomeapi-url=http://127.0.0.1:9",
+        "mundopet.delivery.brasilapi-url=http://127.0.0.1:9" })
 public abstract class IntegrationTestBase {
 
     public static final String MINIO_IMAGE = "pgsty/minio:RELEASE.2026-08-04T00-00-00Z";

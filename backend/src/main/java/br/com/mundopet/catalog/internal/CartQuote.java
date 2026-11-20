@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.UUID;
 
 import br.com.mundopet.catalog.internal.CatalogEnums.Fulfillment;
+import br.com.mundopet.delivery.DeliveryQuote;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
@@ -65,13 +66,20 @@ final class CartQuote {
             String warning) {
     }
 
+    /**
+     * total = itemsTotal + deliveryFee. delivery so vem quando o pedido e de entrega;
+     * fora da area de entrega o whatsappText vem nulo (nao da para enviar).
+     */
     record Response(
             List<Line> lines,
             List<UUID> unavailable,
             int itemsCount,
             BigDecimal subtotal,
             BigDecimal discount,
+            BigDecimal itemsTotal,
+            BigDecimal deliveryFee,
             BigDecimal total,
+            DeliveryQuote delivery,
             String whatsappText) {
     }
 }

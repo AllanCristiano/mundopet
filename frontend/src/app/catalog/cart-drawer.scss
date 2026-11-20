@@ -338,6 +338,35 @@ button {
   }
 }
 
+.ship {
+  animation: line-in 0.4s var(--ease-out);
+
+  dt small {
+    display: block;
+    color: var(--muted);
+    font-size: 0.72rem;
+  }
+
+  dd {
+    align-self: center;
+    font-weight: 600;
+  }
+}
+
+.hint.out {
+  background: color-mix(in srgb, #ff6b5a 14%, transparent);
+
+  button {
+    margin-left: 4px;
+    min-height: 32px;
+    padding: 0 12px;
+    border: 1px solid currentColor;
+    border-radius: 999px;
+    background: none;
+    font-size: 0.78rem;
+  }
+}
+
 .hint {
   margin: 0;
   padding: 10px 12px;

@@ -125,7 +125,7 @@ describe('catalogo (UI)', () => {
     const quote: Quote = {
       lines: [{ productId: 'p1', sku: 'SKU1', name: 'Ração Teste', brand: 'Vita Pet', weightKg: 10, quantity: 2, unitPrice: 80,
         originalUnitPrice: 100, lineTotal: 160, promo: true, warning: 'Apenas 1 em estoque' }],
-      unavailable: ['p2'], itemsCount: 2, subtotal: 200, discount: 40, total: 160,
+      unavailable: ['p2'], itemsCount: 2, subtotal: 200, discount: 40, itemsTotal: 160, deliveryFee: 0, total: 160, delivery: null,
       whatsappText: '🐾 *MUNDOPET* pedido\n✅ *TOTAL: R$ 160,00*',
     };
 
@@ -232,6 +232,54 @@ describe('catalogo (UI)', () => {
       expect(f.componentInstance.canSend()).toBeTrue();
       expect(el.querySelector('.hint')).toBeNull();
       expect(JSON.parse(localStorage.getItem('mundopet-address')!).number).toBe('100');
+      localStorage.removeItem('mundopet-address');
+    }));
+
+    it('entrega: mostra a taxa por km, "a combinar" ou fora da area', fakeAsync(() => {
+      localStorage.setItem('mundopet-address', JSON.stringify({ cep: '01001-000', street: 'Praça da Sé', number: '100', complement: '',
+        district: 'Sé', city: 'São Paulo', state: 'SP', reference: '' }));
+      const { f, cart, el } = setup();
+      cart.isOpen.set(true);
+      f.componentInstance.fulfillment.set('DELIVERY');
+      f.detectChanges();
+      tick(400);
+      const sum = () => el.querySelector('.sum')!.textContent!.replace(/\s+/g, ' ');
+
+      http.expectOne(`${CATALOG_API}/cart/quote`).flush({ ...quote, deliveryFee: 6.4, total: 166.4,
+        delivery: { status: 'OK', distanceKm: 3.2, fee: 6.4, pricePerKm: 2, maxKm: 15 } });
+      f.detectChanges();
+      expect(sum()).toContain('Produtos');
+      expect(sum()).toContain('3,2 km');
+      expect(sum()).toContain('/km');
+      expect(sum()).toMatch(/Entrega.*6,40/);
+      expect(sum()).toMatch(/Total.*166,40/);
+      expect(f.componentInstance.canSend()).toBeTrue();
+
+      f.componentInstance.address.update((a) => ({ ...a, number: '200' }));
+      f.detectChanges();
+      tick(400);
+      http.expectOne(`${CATALOG_API}/cart/quote`).flush({ ...quote, delivery: { status: 'UNKNOWN', distanceKm: null, fee: null, pricePerKm: 2, maxKm: 15 } });
+      f.detectChanges();
+      expect(sum()).toContain('a combinar');
+      expect(f.componentInstance.canSend()).toBeTrue();
+
+      f.componentInstance.address.update((a) => ({ ...a, number: '300' }));
+      f.detectChanges();
+      tick(400);
+      http.expectOne(`${CATALOG_API}/cart/quote`).flush({ ...quote, whatsappText: null,
+        delivery: { status: 'OUT_OF_AREA', distanceKm: 40.5, fee: null, pricePerKm: 2, maxKm: 15 } });
+      f.detectChanges();
+      const out = el.querySelector('.hint.out')!;
+      expect(out.textContent).toContain('40,5 km');
+      expect(out.textContent).toContain('15 km');
+      expect(f.componentInstance.canSend()).toBeFalse();
+
+      // atalho: trocar para retirada
+      out.querySelector('button')!.click();
+      f.detectChanges();
+      expect(f.componentInstance.fulfillment()).toBe('PICKUP');
+      tick(400);
+      http.expectOne(`${CATALOG_API}/cart/quote`).flush(quote);
       localStorage.removeItem('mundopet-address');
     }));
 

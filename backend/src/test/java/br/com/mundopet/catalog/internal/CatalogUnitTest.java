@@ -18,6 +18,9 @@ import org.springframework.dao.DataAccessResourceFailureException;
 
 import br.com.mundopet.catalog.internal.CatalogEnums.Fulfillment;
 import br.com.mundopet.catalog.internal.CatalogEnums.Sort;
+import br.com.mundopet.delivery.DeliveryCalculator;
+import br.com.mundopet.delivery.DeliveryQuote;
+import br.com.mundopet.delivery.DeliveryQuote.Status;
 import br.com.mundopet.shared.NotFoundException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -173,7 +176,74 @@ class CatalogUnitTest {
     // ---------------- Service: sucesso e falhas ----------------
 
     private final ProductRepository repo = mock(ProductRepository.class);
-    private final CatalogService service = new CatalogService(repo, new WhatsAppMessageFormatter());
+    private final DeliveryCalculator delivery = mock(DeliveryCalculator.class);
+    private final CatalogService service = new CatalogService(repo, new WhatsAppMessageFormatter(), delivery);
+
+    static final BigDecimal TWO = new BigDecimal("2.00");
+    static final BigDecimal MAX = new BigDecimal("15");
+
+    private CartQuote.Request deliveryRequest(Product p) {
+        var address = new CartQuote.DeliveryAddress("01001-000", "Rua X", "1", null, "B", "C", "SP", null);
+        return new CartQuote.Request(List.of(new CartQuote.Item(p.id(), 2)), null, Fulfillment.DELIVERY, null, address);
+    }
+
+    @Test
+    void deliveryFeeIsAddedToTotalAndShownInTheMessage() {
+        Product a = product("A", "100.00", "80.00", 10);
+        when(repo.findByIds(any())).thenReturn(Flux.just(a));
+        when(delivery.quote("01001-000")).thenReturn(Mono.just(
+                new DeliveryQuote(Status.OK, new BigDecimal("3.2"), new BigDecimal("6.40"), TWO, MAX)));
+
+        StepVerifier.create(service.quote(deliveryRequest(a))).assertNext(r -> {
+            assertThat(r.itemsTotal()).isEqualByComparingTo("160.00");
+            assertThat(r.deliveryFee()).isEqualByComparingTo("6.40");
+            assertThat(r.total()).isEqualByComparingTo("166.40");
+            assertThat(r.delivery().status()).isEqualTo(Status.OK);
+            assertThat(r.whatsappText())
+                    .contains("🧾 Produtos: R$ 160,00")
+                    .contains("🛵 Entrega (3,2 km × R$ 2,00/km): R$ 6,40")
+                    .contains("✅ *TOTAL: R$ 166,40*\n")
+                    .contains("Entrega no endereço");
+        }).verifyComplete();
+    }
+
+    @Test
+    void outOfAreaHasNoMessageSoItCannotBeSent() {
+        Product a = product("A", "10.00", null, 10);
+        when(repo.findByIds(any())).thenReturn(Flux.just(a));
+        when(delivery.quote(any())).thenReturn(Mono.just(new DeliveryQuote(Status.OUT_OF_AREA, new BigDecimal("40.1"), null, TWO, MAX)));
+        StepVerifier.create(service.quote(deliveryRequest(a))).assertNext(r -> {
+            assertThat(r.whatsappText()).isNull();
+            assertThat(r.deliveryFee()).isZero();
+            assertThat(r.total()).isEqualByComparingTo("20.00");
+            assertThat(r.delivery().deliverable()).isFalse();
+        }).verifyComplete();
+    }
+
+    @Test
+    void unknownDistanceMeansFeeToBeAgreed() {
+        Product a = product("A", "10.00", null, 10);
+        when(repo.findByIds(any())).thenReturn(Flux.just(a));
+        when(delivery.quote(any())).thenReturn(Mono.just(new DeliveryQuote(Status.UNKNOWN, null, null, TWO, MAX)));
+        StepVerifier.create(service.quote(deliveryRequest(a))).assertNext(r -> {
+            assertThat(r.total()).isEqualByComparingTo("20.00");
+            assertThat(r.whatsappText()).contains("🛵 Entrega: _a combinar_").contains("TOTAL: R$ 20,00* _+ entrega_")
+                    .doesNotContain("Produtos:");
+        }).verifyComplete();
+    }
+
+    @Test
+    void pickupNeverAsksForDeliveryFee() {
+        Product a = product("A", "10.00", null, 10);
+        when(repo.findByIds(any())).thenReturn(Flux.just(a));
+        var req = new CartQuote.Request(List.of(new CartQuote.Item(a.id(), 1)), null, Fulfillment.PICKUP, null);
+        StepVerifier.create(service.quote(req)).assertNext(r -> {
+            assertThat(r.delivery()).isNull();
+            assertThat(r.deliveryFee()).isZero();
+            assertThat(r.whatsappText()).doesNotContain("Entrega");
+        }).verifyComplete();
+        verify(delivery, never()).quote(any());
+    }
 
     @Test
     void quoteRecalculatesWithServerPricesAndMergesDuplicates() {

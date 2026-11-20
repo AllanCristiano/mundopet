@@ -10,6 +10,7 @@ import java.util.Locale;
 import org.springframework.stereotype.Component;
 
 import br.com.mundopet.catalog.internal.CatalogEnums.Fulfillment;
+import br.com.mundopet.delivery.DeliveryQuote;
 
 /**
  * Monta o pedido como uma mensagem de WhatsApp com cara de "catalogo de compra".
@@ -29,6 +30,13 @@ class WhatsAppMessageFormatter {
     String format(List<CartQuote.Line> lines, int itemsCount, BigDecimal subtotal, BigDecimal discount,
                   BigDecimal total, String customerName, Fulfillment fulfillment, String notes,
                   CartQuote.DeliveryAddress address) {
+        return format(lines, itemsCount, subtotal, discount, total, customerName, fulfillment, notes, address, null);
+    }
+
+    /** total ja inclui a taxa de entrega (quando calculada). */
+    String format(List<CartQuote.Line> lines, int itemsCount, BigDecimal subtotal, BigDecimal discount,
+                  BigDecimal total, String customerName, Fulfillment fulfillment, String notes,
+                  CartQuote.DeliveryAddress address, DeliveryQuote delivery) {
         StringBuilder sb = new StringBuilder();
         sb.append("🐾 *MUNDOPET · PEDIDO DE RAÇÕES*\n");
         String name = clean(customerName);
@@ -58,7 +66,16 @@ class WhatsAppMessageFormatter {
             sb.append("💰 Subtotal: ").append(money(subtotal)).append('\n');
             sb.append("🏷️ Descontos: -").append(money(discount)).append('\n');
         }
-        sb.append("✅ *TOTAL: ").append(money(total)).append("*\n");
+        boolean feeKnown = delivery != null && delivery.status() == DeliveryQuote.Status.OK;
+        if (feeKnown) {
+            sb.append("🧾 Produtos: ").append(money(total.subtract(delivery.fee()))).append('\n');
+            sb.append("🛵 Entrega (").append(km(delivery.distanceKm())).append(" × ").append(money(delivery.pricePerKm()))
+                    .append("/km): ").append(money(delivery.fee())).append('\n');
+        } else if (delivery != null) {
+            sb.append("🛵 Entrega: _a combinar_\n");
+        }
+        sb.append("✅ *TOTAL: ").append(money(total)).append('*');
+        sb.append(delivery != null && !feeKnown ? " _+ entrega_\n" : "\n");
         sb.append(DIVIDER).append('\n');
 
         if (fulfillment == Fulfillment.DELIVERY && address != null) {
@@ -98,6 +115,13 @@ class WhatsAppMessageFormatter {
     static String money(BigDecimal value) {
         // o formato pt-BR usa espaco nao separavel; troca por espaco normal para o WhatsApp
         return NumberFormat.getCurrencyInstance(PT_BR).format(value).replace(' ', ' ');
+    }
+
+    static String km(BigDecimal distance) {
+        NumberFormat nf = NumberFormat.getNumberInstance(PT_BR);
+        nf.setMinimumFractionDigits(1);
+        nf.setMaximumFractionDigits(1);
+        return nf.format(distance) + " km";
     }
 
     static String kg(BigDecimal weight) {

@@ -78,6 +78,18 @@ mundopet:
     brasilapi-url: ${BRASILAPI_URL:https://brasilapi.com.br/api/cep/v1}
     timeout: 3s
     cache-ttl: 30d
+  delivery:
+    # Taxa de entrega = km ate a loja x preco por km (km = linha reta x road-factor, arredondado p/ cima em 0,1)
+    store-lat: ${STORE_LAT:-23.5505}
+    store-lng: ${STORE_LNG:-46.6333}
+    price-per-km: ${DELIVERY_PRICE_PER_KM:2.00}
+    max-km: ${DELIVERY_MAX_KM:15}
+    road-factor: ${DELIVERY_ROAD_FACTOR:1.3}
+    # Coordenadas do CEP: tenta na ordem; resultado em cache no Redis
+    awesomeapi-url: ${AWESOMEAPI_CEP_URL:https://cep.awesomeapi.com.br/json}
+    brasilapi-url: ${BRASILAPI_CEP_V2_URL:https://brasilapi.com.br/api/cep/v2}
+    timeout: 3s
+    cache-ttl: 30d
   minio:
     endpoint: ${MINIO_ENDPOINT:http://localhost:9000}
     access-key: ${MINIO_ACCESS_KEY:mundopet}

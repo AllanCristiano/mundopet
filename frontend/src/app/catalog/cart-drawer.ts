@@ -8,7 +8,7 @@ import { AddressForm } from './address-form';
 import { BagArt } from './bag-art';
 import { CartStore, MAX_QTY } from './cart.store';
 import { CatalogApi } from './catalog.api';
-import { Fulfillment, Quote, QuoteRequest, kg, money } from './catalog.models';
+import { Fulfillment, Quote, QuoteRequest, kg, km, money } from './catalog.models';
 import { whatsappToHtml } from './whatsapp-format';
 
 @Component({
@@ -39,6 +39,7 @@ export class CartDrawer {
 
   readonly money = money;
   readonly kg = kg;
+  readonly km = km;
   readonly maxQty = MAX_QTY;
 
   /** O pedido como o cliente quer enviar (com endereco na entrega). */
@@ -63,6 +64,12 @@ export class CartDrawer {
   readonly canSend = computed(
     () => !this.quoting() && !!this.quote()?.whatsappText && this.quoteKey() === this.requestKey(),
   );
+  /** Taxa de entrega do orcamento atual (so na entrega, com endereco completo). */
+  readonly delivery = computed(() => (this.fulfillment() === 'DELIVERY' && !this.needsAddress() ? this.quote()?.delivery ?? null : null));
+  readonly outOfArea = computed(() => {
+    const d = this.delivery();
+    return d?.status === 'OUT_OF_AREA' ? d : null;
+  });
   readonly preview = computed(() => whatsappToHtml(this.quote()?.whatsappText ?? ''));
   readonly unavailableNames = computed(() => {
     const ids = new Set(this.quote()?.unavailable ?? []);
