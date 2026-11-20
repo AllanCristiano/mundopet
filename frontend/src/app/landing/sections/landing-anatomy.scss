@@ -1,0 +1,206 @@
+// Mobile first. --p (0..1) e data-step vem do ScrollProgressDirective.
+// --e = quanto as camadas ja "explodiram" (0..1), completo em ~22% do scroll da secao.
+
+.anatomy {
+  position: relative;
+  height: 380svh;
+  --p: 0;
+  --layer: 11svh;
+  --gap0: 4.5svh;
+  --gap: 13svh;
+  background: radial-gradient(ellipse at 50% 50%, var(--bg-3), var(--bg) 70%);
+}
+
+.stage {
+  position: sticky;
+  top: 0;
+  height: 100svh;
+  overflow: hidden;
+  --e: min(1, calc(var(--p) * 4.5));
+}
+
+.head {
+  position: absolute;
+  inset: calc(var(--nav-h) + 12px) 0 auto;
+  text-align: center;
+  z-index: 2;
+  opacity: calc(1 - var(--e) * 1.4);
+  transform: translateY(calc(var(--e) * -30px));
+
+  h2 {
+    font-size: clamp(2rem, 9vw, 4rem);
+    margin-top: 8px;
+  }
+}
+
+// ---------- Camadas ----------
+.stack {
+  position: absolute;
+  left: 50%;
+  top: 43%;
+}
+
+.layer {
+  position: absolute;
+  width: var(--layer);
+  aspect-ratio: 1;
+  left: calc(var(--layer) / -2);
+  top: calc(var(--layer) / -2);
+  color: var(--muted);
+  opacity: calc(0.45 + var(--e) * 0.55);
+  transform: translateY(calc((var(--i) - 2) * (var(--gap0) + (var(--gap) - var(--gap0)) * var(--e))))
+    rotate(calc((1 - var(--e)) * (var(--i) - 2) * 9deg)) scale(calc(0.8 + var(--e) * 0.2));
+  transition:
+    color 0.5s,
+    filter 0.5s;
+  --stroke: 3;
+
+  &.center {
+    color: var(--gold);
+    width: calc(var(--layer) * 1.35);
+    left: calc(var(--layer) * -0.675);
+    top: calc(var(--layer) * -0.675);
+    filter: drop-shadow(0 0 18px rgba(227, 176, 98, 0.5));
+  }
+}
+
+// ---------- Legendas: no celular, uma por vez (legenda ativa) ----------
+.labels {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.label {
+  position: absolute;
+  left: var(--gutter);
+  right: var(--gutter);
+  // acima da barra fixa "Agendar visita" do mobile (48px + 16px + folga)
+  bottom: calc(88px + env(safe-area-inset-bottom));
+  display: grid;
+  gap: 2px;
+  padding: 14px 18px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: rgba(21, 17, 13, 0.82);
+  backdrop-filter: blur(8px);
+  opacity: 0;
+  transform: translateY(24px);
+  transition:
+    opacity 0.5s,
+    transform 0.6s var(--ease-out);
+
+  .num {
+    font-size: 0.7rem;
+    letter-spacing: 0.24em;
+    color: var(--gold);
+  }
+
+  strong {
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-size: 1.25rem;
+  }
+
+  .text {
+    font-size: 0.88rem;
+    color: var(--muted);
+  }
+}
+
+.progress {
+  position: absolute;
+  right: 10px;
+  top: 30%;
+  bottom: 30%;
+  width: 2px;
+  background: var(--line);
+
+  span {
+    display: block;
+    height: 100%;
+    background: var(--gold);
+    transform: scaleY(var(--p));
+    transform-origin: top;
+  }
+}
+
+@for $s from 2 through 6 {
+  $k: $s - 1; // legenda/camada ativa (1..5)
+
+  .anatomy[data-step='#{$s}'] {
+    .label:nth-child(#{$k}) {
+      opacity: 1;
+      transform: none;
+    }
+
+    .layer:nth-child(#{$k}) {
+      color: var(--ink);
+      filter: drop-shadow(0 0 16px rgba(247, 215, 159, 0.65));
+    }
+  }
+}
+
+// ---------- Desktop: todas as legendas acumulam nas laterais, ligadas por linhas ----------
+@media (min-width: 900px) {
+  .anatomy {
+    --layer: 13vh;
+    --gap0: 5vh;
+    --gap: 15.5vh;
+  }
+
+  .stack {
+    top: 54%;
+  }
+  .label {
+    left: auto;
+    right: calc(50% + var(--layer) + 70px);
+    bottom: auto;
+    top: calc(54% + (var(--i) - 2) * var(--gap));
+    width: min(30vw, 340px);
+    padding: 0;
+    border: 0;
+    background: none;
+    backdrop-filter: none;
+    text-align: right;
+    transform: translate(-30px, -50%);
+
+    &::after {
+      content: '';
+      position: absolute;
+      top: 12px;
+      left: calc(100% + 14px);
+      width: 54px;
+      height: 1px;
+      background: linear-gradient(90deg, var(--gold), transparent);
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform 0.8s 0.2s var(--ease-out);
+    }
+
+    &.right {
+      right: auto;
+      left: calc(50% + var(--layer) + 70px);
+      text-align: left;
+      transform: translate(30px, -50%);
+
+      &::after {
+        left: auto;
+        right: calc(100% + 14px);
+        background: linear-gradient(270deg, var(--gold), transparent);
+        transform-origin: right;
+      }
+    }
+  }
+
+  @for $s from 2 through 6 {
+    .anatomy[data-step='#{$s}'] .label:nth-child(-n + #{$s - 1}) {
+      opacity: 1;
+      transform: translate(0, -50%);
+
+      &::after {
+        transform: scaleX(1);
+      }
+    }
+  }
+}

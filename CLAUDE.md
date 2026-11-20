@@ -9,6 +9,9 @@ Postgres (R2DBC), Redis (fila via Streams + rate limit), MinIO, nginx. Tudo orqu
 - Todo módulo novo/alterado precisa de testes unitários, de falha e de integração (Testcontainers), com cobertura ≥ 80%.
 - Não remover nenhuma camada anti-DoS; o `DenialOfServiceIT` e o `tests/dos/dos.js` precisam continuar passando.
 - API escala até 6 réplicas: mantenha-a stateless e respeite o orçamento de conexões (pool × 6 < max_connections).
+- Frontend é MOBILE FIRST (CSS base = celular, desktop só via `min-width`) e a landing é cheia de animação,
+  mas só `transform`/`opacity`, com `prefers-reduced-motion` respeitado. Use as diretivas em `frontend/src/app/landing/motion/`.
+- Landing: `/` (textos em `landing/landing.data.ts`); painel de pets: `/pets`.
 
 Comandos:
 - Backend: `cd backend && ./mvnw verify` (precisa do Docker rodando). No Windows, `JAVA_HOME` deve apontar para a pasta do JDK, sem aspas e sem `\bin`.

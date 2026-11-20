@@ -1,0 +1,72 @@
+<div class="marquee" aria-hidden="true">
+  <div class="track">
+    @for (word of marquee; track $index) {
+      <span>{{ word }}</span><i>✦</i>
+    }
+  </div>
+</div>
+
+@for (c of chapters; track c.id; let i = $index) {
+  <section
+    class="chapter"
+    [class.reverse]="i % 2 === 1"
+    [class]="'scene-' + c.scene"
+    [id]="c.id"
+    appScrollProgress
+    mode="view"
+    [attr.aria-labelledby]="c.id + '-title'"
+  >
+    <span class="bignum" aria-hidden="true">{{ c.number }}</span>
+
+    <div class="grid container">
+      <div class="scene" aria-hidden="true" appReveal>
+        <div class="halo"></div>
+        @switch (c.scene) {
+          @case ('hotel') {
+            <div class="moon"></div>
+            @for (b of bits; track b) {
+              <i class="star" [style.--b]="b"></i>
+            }
+            <app-pet-art class="main" kind="house" />
+            <span class="z" style="--b: 0">z</span><span class="z" style="--b: 1">z</span><span class="z" style="--b: 2">Z</span>
+          }
+          @case ('food') {
+            @for (b of bits; track b) {
+              <i class="kibble" [style.--b]="b"></i>
+            }
+            <app-pet-art class="main" kind="bowl" />
+          }
+          @case ('beauty') {
+            @for (b of bits; track b) {
+              <i class="bubble" [style.--b]="b"></i>
+            }
+            <app-pet-art class="main" kind="scissors" />
+          }
+          @case ('vet') {
+            <svg class="ecg" viewBox="0 0 400 100" preserveAspectRatio="none">
+              <path pathLength="1" d="M0 60 L120 60 L140 60 L155 20 L172 92 L186 46 L196 60 L400 60" />
+            </svg>
+            @for (b of bits.slice(0, 6); track b) {
+              <i class="plus" [style.--b]="b">+</i>
+            }
+            <app-pet-art class="main" kind="heart" />
+          }
+        }
+      </div>
+
+      <div class="copy">
+        <p class="kicker" appReveal>Capítulo {{ c.number }} · {{ c.kicker }}</p>
+        <h2 [id]="c.id + '-title'" [appReveal]="100">
+          {{ c.title }} <em>{{ c.titleEm }}</em>
+        </h2>
+        <p class="text" [appReveal]="200">{{ c.text }}</p>
+        <ul class="features">
+          @for (f of c.features; track f; let j = $index) {
+            <li [appReveal]="250 + j * 90">{{ f }}</li>
+          }
+        </ul>
+        <a class="btn" [href]="whatsapp" target="_blank" rel="noopener" [appReveal]="600">{{ c.cta }} <span aria-hidden="true">→</span></a>
+      </div>
+    </div>
+  </section>
+}

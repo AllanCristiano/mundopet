@@ -1,4 +1,4 @@
-# Regras do projeto MundoPet
+﻿# Regras do projeto MundoPet
 
 Estas regras são **obrigatórias**. Um PR que viole qualquer item marcado com **[BLOQUEANTE]** não pode ser mergeado.
 
@@ -117,3 +117,23 @@ stack:     docker compose up -d --build && docker compose --profile dos run --rm
 ```
 7.2 Commits pequenos, mensagem no imperativo, um assunto por PR.
 7.3 Bug corrigido = teste que reproduz o bug no mesmo PR.
+
+## 8. Mobile first e animação
+
+8.1 **[BLOQUEANTE]** Toda tela é desenhada e codada **primeiro para o celular** (base de 360px). O CSS base é o do celular; telas maiores entram **somente** com `@media (min-width: ...)`. É proibido usar `max-width` em media query para "consertar" o mobile.
+
+8.2 **[BLOQUEANTE]** Nenhuma página pode ter rolagem horizontal em 360px. Verificar em **360px, 390px, 768px e 1440px** antes do PR.
+
+8.3 Área de toque mínima de **48×48px** (botões, links de menu, ícones clicáveis). Textos com no mínimo 16px no corpo. Respeitar `env(safe-area-inset-*)` em elementos fixos.
+
+8.4 Use unidades de viewport dinâmicas (`svh`/`dvh`) em vez de `vh` para seções de tela cheia no celular (a barra do navegador muda de altura).
+
+8.5 **[BLOQUEANTE]** As páginas públicas (landing) devem ser **ricas em animação** para despertar a vontade de conhecer a loja: entrada do conteúdo ao rolar (`appReveal`), cenas guiadas pelo scroll (`appScrollProgress`), contadores (`appCountUp`) e microinterações. Mas animar **só `transform` e `opacity`** (e `filter`/`clip-path` com moderação). Nunca animar `width`, `height`, `top`, `left`, `margin` (causam re-layout e travam no celular).
+
+8.6 **[BLOQUEANTE]** Respeitar `prefers-reduced-motion`: com a preferência ativa, nada de parallax nem loop infinito, e o conteúdo aparece direto. Nenhum conteúdo pode depender da animação para ficar visível (se o `IntersectionObserver` não existir, o conteúdo aparece).
+
+8.7 Listeners de scroll são `passive`, rodam **fora da zona do Angular** e atualizam no máximo uma vez por frame (`requestAnimationFrame`). Animação guiada por scroll escreve variáveis CSS (`--p`, `data-step`), sem disparar change detection.
+
+8.8 Desempenho no celular: a landing deve ficar abaixo de **150 kB comprimidos** de JS inicial + rota, e as imagens novas devem ser `webp/avif` com `loading="lazy"` (exceto a primeira dobra).
+
+8.9 Ilustrações decorativas usam `aria-hidden="true"`; as que comunicam algo têm `role="img"` + `aria-label`. Hierarquia de títulos: um único `h1` por página.

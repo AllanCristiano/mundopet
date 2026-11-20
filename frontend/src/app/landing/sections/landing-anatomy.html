@@ -1,0 +1,28 @@
+<section id="cuidado" class="anatomy" appScrollProgress mode="pin" [steps]="steps" aria-labelledby="anatomy-title">
+  <div class="stage">
+    <header class="head container" appReveal>
+      <p class="kicker">Capítulo 00 · Nosso jeito</p>
+      <h2 id="anatomy-title">A anatomia do <em>cuidado</em></h2>
+    </header>
+
+    <div class="stack" aria-hidden="true" appReveal>
+      @for (layer of layers; track layer.label; let i = $index) {
+        <div class="layer" [class.center]="layer.center" [style.--i]="i">
+          <app-pet-art [kind]="layer.art" />
+        </div>
+      }
+    </div>
+
+    <ol class="labels">
+      @for (layer of layers; track layer.label; let i = $index) {
+        <li class="label" [class.right]="i % 2 === 1" [style.--i]="i">
+          <span class="num">0{{ i + 1 }}</span>
+          <strong>{{ layer.label }}</strong>
+          <span class="text">{{ layer.text }}</span>
+        </li>
+      }
+    </ol>
+
+    <div class="progress" aria-hidden="true"><span></span></div>
+  </div>
+</section>

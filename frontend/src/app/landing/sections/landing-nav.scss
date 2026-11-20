@@ -1,0 +1,207 @@
+// Mobile first: base = celular; desktop so em @media (min-width)
+
+.nav {
+  position: fixed;
+  inset: 0 0 auto;
+  z-index: 50;
+  height: var(--nav-h);
+  transition:
+    background 0.4s,
+    backdrop-filter 0.4s,
+    border-color 0.4s;
+  border-bottom: 1px solid transparent;
+}
+
+:host(.is-scrolled) .nav {
+  background: rgba(11, 9, 8, 0.72);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-color: var(--line);
+}
+
+.nav__inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 100%;
+}
+
+.logo {
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  text-decoration: none;
+  white-space: nowrap;
+
+  span {
+    display: inline-block;
+    color: var(--gold);
+    animation: spin 8s linear infinite;
+  }
+}
+
+.links,
+.cta-desktop {
+  display: none;
+}
+
+.burger {
+  position: relative;
+  z-index: 60;
+  width: 48px;
+  height: 48px;
+  border: 0;
+  background: none;
+  cursor: pointer;
+
+  span {
+    position: absolute;
+    left: 12px;
+    right: 12px;
+    height: 1.5px;
+    background: var(--ink);
+    transition: transform 0.45s var(--ease-out);
+  }
+
+  span:first-child {
+    transform: translateY(-4px);
+  }
+
+  span:last-child {
+    transform: translateY(4px);
+  }
+}
+
+:host(.menu-open) .burger {
+  span:first-child {
+    transform: rotate(45deg);
+  }
+
+  span:last-child {
+    transform: rotate(-45deg);
+  }
+}
+
+// ---------- Menu em tela cheia (mobile) ----------
+.menu {
+  position: fixed;
+  inset: 0;
+  z-index: 45;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 40px;
+  padding: var(--nav-h) var(--gutter) 40px;
+  background: radial-gradient(circle at 80% 10%, rgba(227, 176, 98, 0.18), transparent 55%), var(--bg);
+  clip-path: circle(0 at calc(100% - 44px) 32px);
+  transition: clip-path 0.8s var(--ease-out);
+
+  nav {
+    display: grid;
+    gap: 10px;
+  }
+
+  nav a {
+    display: flex;
+    align-items: baseline;
+    gap: 14px;
+    font-family: var(--font-display);
+    font-size: clamp(2.2rem, 11vw, 3.4rem);
+    text-decoration: none;
+    opacity: 0;
+    transform: translateY(30px);
+    transition:
+      opacity 0.6s,
+      transform 0.8s var(--ease-out);
+    transition-delay: calc(0.15s + var(--i) * 0.07s);
+  }
+
+  small {
+    font: 500 0.75rem var(--font-body);
+    color: var(--gold);
+    letter-spacing: 0.2em;
+  }
+}
+
+:host(.menu-open) .menu {
+  clip-path: circle(150% at calc(100% - 44px) 32px);
+
+  nav a {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+// ---------- Barra fixa de agendamento (so mobile) ----------
+.bar {
+  position: fixed;
+  left: var(--gutter);
+  right: var(--gutter);
+  bottom: calc(16px + env(safe-area-inset-bottom));
+  z-index: 40;
+  box-shadow: 0 12px 40px rgba(227, 176, 98, 0.35);
+  transform: translateY(160%);
+  transition: transform 0.6s var(--ease-out);
+}
+
+:host(.show-bar:not(.menu-open)) .bar {
+  transform: none;
+}
+
+// ---------- Desktop ----------
+@media (min-width: 900px) {
+  .burger,
+  .menu,
+  .bar {
+    display: none;
+  }
+
+  .links {
+    display: flex;
+    gap: 36px;
+
+    a {
+      position: relative;
+      font-size: 0.78rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      text-decoration: none;
+      color: var(--muted);
+      transition: color 0.3s;
+
+      &::after {
+        content: '';
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: -6px;
+        height: 1px;
+        background: var(--gold);
+        transform: scaleX(0);
+        transform-origin: right;
+        transition: transform 0.5s var(--ease-out);
+      }
+
+      &:hover {
+        color: var(--ink);
+
+        &::after {
+          transform: scaleX(1);
+          transform-origin: left;
+        }
+      }
+    }
+  }
+
+  .cta-desktop {
+    display: inline-flex;
+    min-height: 42px;
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

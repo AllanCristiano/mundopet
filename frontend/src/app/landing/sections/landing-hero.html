@@ -1,0 +1,47 @@
+<section id="topo" class="hero" appScrollProgress mode="pin" [steps]="5" aria-labelledby="hero-title">
+  <div class="stage">
+    <div class="glow" aria-hidden="true"></div>
+
+    <div class="dust" aria-hidden="true">
+      @for (p of particles; track $index) {
+        <i
+          [style.left.%]="p.x"
+          [style.top.%]="p.y"
+          [style.width.px]="p.size"
+          [style.height.px]="p.size"
+          [style.animation-delay.s]="p.delay"
+          [style.animation-duration.s]="p.duration"
+        ></i>
+      }
+    </div>
+
+    <div class="art">
+      <app-pet-art kind="dog" label="Ilustração de um cachorro" [class.is-drawn]="drawn()" />
+    </div>
+
+    <div class="copy container">
+      <p class="kicker intro" style="--i: 0">Pet shop · Hotel · Spa · Clínica</p>
+      <h1 id="hero-title">
+        @for (w of titleWords; track $index) {
+          <span class="word" [style.--i]="$index + 1">{{ w }}</span>{{ ' ' }}
+        }
+        <em class="word" [style.--i]="titleWords.length + 1">merece</em>
+      </h1>
+      <p class="sub intro" style="--i: 9">
+        Hospedagem com carinho, nutrição de verdade, beleza de spa e veterinários 24h — tudo em um só lugar.
+      </p>
+      <div class="actions intro" style="--i: 10">
+        <a class="btn btn--gold" [href]="whatsapp" target="_blank" rel="noopener">Agendar visita</a>
+        <a class="btn" href="#cuidado">Conhecer</a>
+      </div>
+    </div>
+
+    <ul class="pillars" aria-label="Nossos pilares">
+      @for (p of pillars; track p) {
+        <li>{{ p }}</li>
+      }
+    </ul>
+
+    <div class="cue" aria-hidden="true"><span></span>role</div>
+  </div>
+</section>

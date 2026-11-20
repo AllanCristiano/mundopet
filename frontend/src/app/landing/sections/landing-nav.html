@@ -1,0 +1,39 @@
+<header class="nav">
+  <div class="nav__inner container">
+    <a class="logo" href="#topo" (click)="close()" aria-label="MundoPet, início">
+      Mundo <span aria-hidden="true">✦</span> Pet
+    </a>
+
+    <nav class="links" aria-label="Serviços">
+      @for (link of links; track link.href) {
+        <a [href]="link.href">{{ link.label }}</a>
+      }
+    </nav>
+
+    <a class="btn cta-desktop" [href]="whatsapp" target="_blank" rel="noopener">Agendar visita</a>
+
+    <button
+      type="button"
+      class="burger"
+      [attr.aria-expanded]="open()"
+      aria-controls="menu-mobile"
+      [attr.aria-label]="open() ? 'Fechar menu' : 'Abrir menu'"
+      (click)="toggle()"
+    >
+      <span></span><span></span>
+    </button>
+  </div>
+</header>
+
+<div id="menu-mobile" class="menu" [attr.aria-hidden]="!open()" [attr.inert]="open() ? null : ''">
+  <nav aria-label="Menu">
+    @for (link of links; track link.href; let i = $index) {
+      <a [href]="link.href" [style.--i]="i" (click)="close()">
+        <small>0{{ i + 1 }}</small>{{ link.label }}
+      </a>
+    }
+  </nav>
+  <a class="btn btn--gold" [href]="whatsapp" target="_blank" rel="noopener" (click)="close()">Agendar visita</a>
+</div>
+
+<a class="bar btn btn--gold" [href]="whatsapp" target="_blank" rel="noopener">Agendar visita</a>
