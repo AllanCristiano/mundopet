@@ -120,4 +120,21 @@ void main() {
     await tester.pumpAndSettle();
     expect(h.backend.calls('/api/site').length, 2);
   });
+
+  testWidgets('menu com calombo: o circulo dourado desliza ate a aba tocada', (tester) async {
+    await pumpApp(tester, height: 844);
+    double circleX() => tester.getCenter(find.byKey(const Key('nav-active'))).dx;
+    double labelX(String l) => tester.getCenter(find.descendant(of: find.byKey(const Key('nav')), matching: find.text(l))).dx;
+    expect(circleX(), closeTo(labelX('Início'), 1));
+    expect(tester.getSemantics(find.bySemanticsLabel('Início')), isSemantics(isSelected: true, isButton: true));
+
+    await tester.tap(find.text('Beleza'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 200));
+    final midway = circleX();
+    expect(midway, greaterThan(labelX('Início')));
+    expect(midway, lessThan(labelX('Beleza')));
+    await tester.pumpAndSettle();
+    expect(circleX(), closeTo(labelX('Beleza'), 1));
+  });
 }

@@ -29,6 +29,55 @@ Monólito modular com escala horizontal até 6 réplicas, totalmente assíncrono
 
 **Regras obrigatórias: [RULES.md](RULES.md).**
 
+## Telas
+
+### Site
+
+<p align="center">
+  <img src="docs/media/site-landing.gif" width="240" alt="Landing no celular: rolagem com animações" />
+  &nbsp;
+  <img src="docs/media/site-secao-app.gif" width="240" alt="Seção do app na landing: celular alternando entre Início, Rações e Beleza" />
+  &nbsp;
+  <img src="docs/media/site-loja-mobile.png" width="240" alt="Loja de rações no celular" />
+</p>
+
+<p align="center">
+  <img src="docs/media/site-home-desktop.png" width="49%" alt="Landing no computador, tema escuro" />
+  <img src="docs/media/site-home-desktop-claro.png" width="49%" alt="Landing no computador, tema claro" />
+</p>
+
+<p align="center">
+  <img src="docs/media/site-loja-desktop.png" width="49%" alt="Loja de rações no computador" />
+  <img src="docs/media/site-gestao-desktop.png" width="49%" alt="Gestão do site (/gestao)" />
+</p>
+
+<p align="center">
+  <img src="docs/media/site-home-mobile.png" width="220" alt="Início do site no celular" />
+  &nbsp;
+  <img src="docs/media/site-beleza-mobile.png" width="220" alt="Espaço Beleza no celular" />
+</p>
+
+### App (Flutter)
+
+<p align="center">
+  <img src="docs/media/app-menu-calombo.gif" width="240" alt="Menu do app com o calombo dourado deslizando entre as abas" />
+  &nbsp;
+  <img src="docs/media/app-inicio.png" width="240" alt="Início do app, tema escuro" />
+  &nbsp;
+  <img src="docs/media/app-inicio-claro.png" width="240" alt="Início do app, tema claro" />
+</p>
+
+<p align="center">
+  <img src="docs/media/app-racoes.png" width="240" alt="Loja de rações no app" />
+  &nbsp;
+  <img src="docs/media/app-pedido-entrega.png" width="240" alt="Pedido com entrega: endereço pelo CEP e taxa por km" />
+  &nbsp;
+  <img src="docs/media/app-beleza.png" width="240" alt="Espaço Beleza no app" />
+</p>
+
+> Imagens capturadas da stack rodando (`docker compose up -d --build`) com os textos padrão; o app foi capturado
+> do build web do mesmo código Flutter. Para refazer, gere de novo e substitua os arquivos em `docs/media/`.
+
 ## Subir
 
 ```bash
@@ -81,6 +130,9 @@ O app segue o site (mesmas cores, tema claro/escuro com a mesma escolha salva e 
 | **Rações** | busca, cães/gatos, promoções, ordenação; carrinho → retirar ou entregar (endereço pelo CEP, taxa por km calculada pela API) → pedido pronto no WhatsApp |
 | **Beleza** | galeria das fotos que a clínica publica (filtro por serviço, foto em tela cheia com zoom) e envio de depoimento para aprovação |
 | **Pets** | cadastro de pets |
+
+Menu de abas com "calombo": a barra sobe em curva sobre a aba atual e o ícone dela entra num círculo dourado,
+que desliza até a aba tocada (a mesma animação aparece no celular da landing). Veja o GIF em [Telas](#telas).
 
 Sem API, o app abre com os textos padrão (nunca trava). O endereço de entrega fica salvo no aparelho.
 

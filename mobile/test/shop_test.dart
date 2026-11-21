@@ -51,7 +51,7 @@ void main() {
     expect(find.text('1 item · R\$ 329,90'), findsOneWidget);
     await tapAndSettle(tester, find.byTooltip('Aumentar'));
     expect(find.text('2 itens · R\$ 659,80'), findsOneWidget);
-    expect(find.descendant(of: find.byType(NavigationBar), matching: find.text('2')), findsOneWidget);
+    expect(find.descendant(of: find.byKey(const Key('nav')), matching: find.text('2')), findsOneWidget);
     await tapAndSettle(tester, find.byTooltip('Diminuir'));
     await tapAndSettle(tester, find.byTooltip('Remover Ração Bosque'));
     expect(find.byKey(const Key('cart-bar')), findsNothing);

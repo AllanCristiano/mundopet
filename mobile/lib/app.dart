@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'beauty/beauty_models.dart';
 import 'beauty/beauty_page.dart';
 import 'core/api.dart';
+import 'core/bump_nav.dart';
 import 'core/site.dart';
 import 'core/theme.dart';
 import 'core/widgets.dart';
@@ -174,26 +175,20 @@ class _AppShellState extends State<AppShell> {
           ),
           bottomNavigationBar: ListenableBuilder(
             listenable: scope.cart,
-            builder: (context, _) => NavigationBar(
-              selectedIndex: current.index,
-              onDestinationSelected: (i) => scope.tab.value = AppTab.values[i],
-              destinations: [
-                const NavigationDestination(icon: Icon(Icons.home_outlined), selectedIcon: Icon(Icons.home_rounded), label: 'Início'),
-                NavigationDestination(
-                  icon: Badge(
-                    isLabelVisible: !scope.cart.isEmpty,
-                    label: Text('${scope.cart.count}'),
-                    child: const Icon(Icons.shopping_bag_outlined),
-                  ),
-                  selectedIcon: Badge(
-                    isLabelVisible: !scope.cart.isEmpty,
-                    label: Text('${scope.cart.count}'),
-                    child: const Icon(Icons.shopping_bag_rounded),
-                  ),
+            builder: (context, _) => BumpNavBar(
+              key: const Key('nav'),
+              index: current.index,
+              onTap: (i) => scope.tab.value = AppTab.values[i],
+              items: [
+                const BumpNavItem(icon: Icons.home_outlined, activeIcon: Icons.home_rounded, label: 'Início'),
+                BumpNavItem(
+                  icon: Icons.shopping_bag_outlined,
+                  activeIcon: Icons.shopping_bag_rounded,
                   label: 'Rações',
+                  badge: scope.cart.count,
                 ),
-                const NavigationDestination(icon: Icon(Icons.auto_awesome_outlined), selectedIcon: Icon(Icons.auto_awesome), label: 'Beleza'),
-                const NavigationDestination(icon: Icon(Icons.pets_outlined), selectedIcon: Icon(Icons.pets), label: 'Pets'),
+                const BumpNavItem(icon: Icons.auto_awesome_outlined, activeIcon: Icons.auto_awesome, label: 'Beleza'),
+                const BumpNavItem(icon: Icons.pets_outlined, activeIcon: Icons.pets, label: 'Pets'),
               ],
             ),
           ),

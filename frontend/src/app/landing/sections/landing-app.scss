@@ -118,7 +118,7 @@
 
 .view {
   position: absolute;
-  inset: 72px 14px 58px;
+  inset: 72px 14px 78px;
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -296,7 +296,7 @@
   bottom: 0;
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  padding: 8px 6px 14px;
+  padding: 12px 6px 14px;
   background: #15110d;
   font-size: 8px;
   text-align: center;
@@ -305,24 +305,65 @@
     position: relative;
     z-index: 1;
     display: grid;
-    gap: 2px;
+    justify-items: center;
+    gap: 3px;
   }
 
   i {
+    display: block;
     font-style: normal;
     font-size: 12px;
+    line-height: 1;
   }
 
-  // indicador da aba ativa acompanha a tela que esta aparecendo
+  // a aba ativa: o icone sobe para dentro do circulo dourado (igual ao app)
+  span:nth-child(-n + 3) i {
+    animation: lift var(--cycle) var(--ease-out) infinite;
+  }
+
+  span:nth-child(2) i {
+    animation-delay: calc(var(--cycle) / 3);
+  }
+
+  span:nth-child(3) i {
+    animation-delay: calc(var(--cycle) * 2 / 3);
+  }
+
+  // "calombo": a barra sobe em curva sobre a aba atual e desliza junto com a tela
   .pill {
     position: absolute;
-    top: 6px;
+    top: -14px;
     left: 6px;
     width: calc((100% - 12px) / 4);
-    height: 22px;
-    border-radius: 99px;
-    background: rgba(227, 176, 98, 0.25);
+    height: 40px;
     animation: pill var(--cycle) var(--ease-out) infinite;
+
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 50%;
+      width: 58px;
+      height: 40px;
+      translate: -50% 0;
+      border-radius: 50%;
+      background: #15110d;
+      box-shadow: 0 -6px 12px -6px rgba(0, 0, 0, 0.7);
+    }
+
+    &::after {
+      content: '';
+      position: absolute;
+      top: 1px;
+      left: 50%;
+      width: 28px;
+      height: 28px;
+      translate: -50% 0;
+      border-radius: 50%;
+      border: 1.5px solid #e3b062;
+      background: rgba(227, 176, 98, 0.22);
+      box-shadow: 0 0 12px rgba(227, 176, 98, 0.45);
+    }
   }
 }
 
@@ -548,6 +589,20 @@ h2 {
   }
 }
 
+@keyframes lift {
+  0%,
+  30% {
+    transform: translateY(-16px) scale(1.15);
+  }
+  34%,
+  96% {
+    transform: none;
+  }
+  100% {
+    transform: translateY(-16px) scale(1.15);
+  }
+}
+
 @keyframes pill {
   0%,
   30% {
@@ -569,8 +624,13 @@ h2 {
 // sem animacao: fica parado na tela inicial do app
 @media (prefers-reduced-motion: reduce) {
   .view,
-  .tabs .pill {
+  .tabs .pill,
+  .tabs span i {
     animation: none;
+  }
+
+  .tabs span:first-child i {
+    transform: translateY(-16px) scale(1.15);
   }
 
   .view.v1 {
